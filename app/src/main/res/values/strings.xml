@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Go4Lunch</string>
+
+    <string name="facebook_application_id" translatable="false">432725947334830</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb432725947334830</string>
+    <string name="api_maps_key">AIzaSyAFahzqrhTG1gi_SgbjmBE6hbezryPxeoo</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="menu_your_lunch">Your Lunch</string>
+    <string name="menu_setting">Settings</string>
+    <string name="menu_log_out">Logout</string>
+    <string name="menu_search">Search</string>
+    <string name="hungry">I\'m Hungry!</string>
+    <string name="twitter_consumer_key" translatable="false">bSUt73cabbyd9ijD69Xd542G7 </string>
+    <string name="twitter_consumer_secret" translatable="false">S1OyJ0LrDf0z6DLiqQ4LtMbrMaOoMrIUhfLN2euAMytBrT4CCE </string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pop_pup_message_log_out">Are you sure to want logout?</string>
+    <string name="pop_pup_yes">Yes</string>
+    <string name="pop_pup_no">No</string>
+    <string name="message_permission_location">This permission is needed to locate you.</string>
+    <string name="message_activate">Activate</string>
+    <string name="your_position">Your Position</string>
+
+</resources>
