@@ -16,16 +16,13 @@ import com.firebase.ui.auth.AuthUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
-import fr.thomas.lefebvre.go4lunch.ui.fragments.ListFragment
-import fr.thomas.lefebvre.go4lunch.ui.fragments.MapsFragment
-import fr.thomas.lefebvre.go4lunch.ui.fragments.WorkmatesFragment
+import fr.thomas.lefebvre.go4lunch.ui.fragment.ListFragment
+import fr.thomas.lefebvre.go4lunch.ui.fragment.MapsFragment
+import fr.thomas.lefebvre.go4lunch.ui.fragment.WorkmatesFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.nav_header_main.*
 import kotlinx.android.synthetic.main.nav_header_main.view.*
-import android.content.DialogInterface
 import androidx.appcompat.app.AlertDialog
-import com.google.android.gms.maps.OnMapReadyCallback
 import fr.thomas.lefebvre.go4lunch.R
 
 
@@ -38,7 +35,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         toolbar.setTitle("I'm hungry")
         setSupportActionBar(toolbar)
-
 
 
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
@@ -62,8 +58,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
-
-
     override fun onBackPressed() {
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -72,7 +66,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             super.onBackPressed()
         }
     }
-
 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -115,76 +108,76 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun alertDialogLogOut(){
+    private fun alertDialogLogOut() {
         AlertDialog.Builder(this)
             .setMessage(R.string.pop_pup_message_log_out)
-            .setPositiveButton(R.string.pop_pup_yes
+            .setPositiveButton(
+                R.string.pop_pup_yes
             ) { _, _ ->
                 logOutUser()
-                finish()}
+                finish()
+            }
             .setNegativeButton(R.string.pop_pup_no, null)
             .show()
     }
 
-    fun changeIconMenuDrawer(){
+    fun changeIconMenuDrawer() {
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_burger)
     }
 
-    fun replaceFragment(fragment: Fragment){
-        val fragmentTransaction= supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.fragment_container,fragment)
+    fun replaceFragment(fragment: Fragment) {
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.fragment_container, fragment)
         fragmentTransaction.commit()
 
     }
 
-    fun getUserInformation(){
-        val navHeaderView= nav_view_drawer.getHeaderView(0)
-        val navUserName=navHeaderView.tv_user_name
-        val navUserMail=navHeaderView.tv_user_mail
-        val navUserPic=navHeaderView.profile_image
+    fun getUserInformation() {
+        val navHeaderView = nav_view_drawer.getHeaderView(0)
+        val navUserName = navHeaderView.tv_user_name
+        val navUserMail = navHeaderView.tv_user_mail
+        val navUserPic = navHeaderView.profile_image
         val user = FirebaseAuth.getInstance().currentUser
         navUserName.text = user?.displayName
         navUserMail.text = user?.email
         Picasso.get().load(user?.photoUrl).into(navUserPic)
 
-         }
+    }
 
-    fun logOutUser(){
+
+    private fun logOutUser() {
+
         AuthUI.getInstance().signOut(this@MainActivity)
-            .addOnCompleteListener{
+            .addOnCompleteListener {
 
-                val welcomeActivityIntent= Intent(this,WelcomeActivity::class.java)
+                val welcomeActivityIntent = Intent(this, WelcomeActivity::class.java)
                 startActivity(welcomeActivityIntent)
             }
-            .addOnFailureListener {
-                    e-> Toast.makeText(this@MainActivity,e.message,Toast.LENGTH_LONG).show()
+            .addOnFailureListener { e ->
+                Toast.makeText(this@MainActivity, e.message, Toast.LENGTH_LONG).show()
+
             }
     }
 
-    private val mOnNavigationItemSelectedListener= BottomNavigationView.OnNavigationItemSelectedListener {item->
-        when(item.itemId){
-            R.id.navigation_maps->{
+    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+        when (item.itemId) {
+            R.id.navigation_maps -> {
                 replaceFragment(MapsFragment())
-                return@OnNavigationItemSelectedListener  true
+                return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_list->{
+            R.id.navigation_list -> {
                 replaceFragment(ListFragment())
-                return@OnNavigationItemSelectedListener  true
+                return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_workmates->{
+            R.id.navigation_workmates -> {
                 replaceFragment(WorkmatesFragment())
-                return@OnNavigationItemSelectedListener  true
+                return@OnNavigationItemSelectedListener true
             }
         }
         false
     }
-
-
-
-
-
 
 
 }

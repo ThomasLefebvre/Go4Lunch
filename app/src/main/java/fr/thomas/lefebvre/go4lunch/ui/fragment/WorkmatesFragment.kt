@@ -1,4 +1,4 @@
-package fr.thomas.lefebvre.go4lunch.ui.fragments
+package fr.thomas.lefebvre.go4lunch.ui.fragment
 
 
 import android.os.Bundle
@@ -18,14 +18,14 @@ private const val ARG_PARAM2 = "param2"
  * A simple [Fragment] subclass.
  *
  */
-class ListFragment : Fragment() {
+class WorkmatesFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list, container, false)
+        return inflater.inflate(R.layout.fragment_workmates, container, false)
     }
 
 
