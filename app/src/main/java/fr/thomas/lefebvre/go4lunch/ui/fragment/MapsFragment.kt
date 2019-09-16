@@ -53,7 +53,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     //API service
     lateinit var mService: IGoogleAPIService
 
-    internal lateinit var currentPlace: NearbyPlaces
+
 
 
     override fun onCreateView(
@@ -110,6 +110,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
             return
         }
         mGoogleMap.isMyLocationEnabled = true
+        mGoogleMap.uiSettings.isZoomControlsEnabled = true
         fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity()) { location ->
             if (location != null) {
                 mLastLocation = location
@@ -119,24 +120,15 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 Log.d("POSITION_DEBUG", mLongitude.toString())
                 nearbyPlaces(mLatitude,mLongitude)
                 val currentLatLng = LatLng(mLatitude, mLongitude)
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                placeMarkerOnMap(currentLatLng)
-                mGoogleMap.uiSettings.isZoomControlsEnabled = true
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
+
 
 
             }
         }
     }
 
-    //method for place marker in map in terms of LatLng
-    private fun placeMarkerOnMap(location: LatLng) {
-        val markerOptions = MarkerOptions()
-            .position(location)
-            .title(getString(R.string.your_position))
-            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
 
-        mGoogleMap.addMarker(markerOptions)
-    }
 
     private fun nearbyPlaces(latitude: Double, longitude: Double) {
 
@@ -151,9 +143,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 }
 
                 override fun onResponse(call: Call<NearbyPlaces>, response: Response<NearbyPlaces>) {
-                  currentPlace = response.body()!!
 
                     if (response!!.isSuccessful) {
+
                         Log.d("REQUEST_DEBUG",response.message())
                         for (i in 0 until response!!.body()!!.results!!.size) {
 
@@ -166,8 +158,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                             val markerOptions = MarkerOptions()
                                 .position(latLng)
                                 .title(placeName)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
                             mGoogleMap.addMarker(markerOptions)
-                            Toast.makeText(requireContext(),"The best is: "+currentPlace.results[0].name,Toast.LENGTH_LONG).show()
+
                         }
                     }
                 }
