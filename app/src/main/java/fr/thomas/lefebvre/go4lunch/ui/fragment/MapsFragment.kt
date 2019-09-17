@@ -1,29 +1,30 @@
 package fr.thomas.lefebvre.go4lunch.ui.fragment
 
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import fr.thomas.lefebvre.go4lunch.R
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
+import fr.thomas.lefebvre.go4lunch.ui.activity.MainActivity
 import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -52,8 +53,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //API service
     lateinit var mService: IGoogleAPIService
-
-
 
 
     override fun onCreateView(
@@ -118,16 +117,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 var mLongitude = mLastLocation.longitude
                 Log.d("POSITION_DEBUG", mLatitude.toString())
                 Log.d("POSITION_DEBUG", mLongitude.toString())
-                nearbyPlaces(mLatitude,mLongitude)
+                nearbyPlaces(mLatitude, mLongitude)
                 val currentLatLng = LatLng(mLatitude, mLongitude)
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
-
 
 
             }
         }
     }
-
 
 
     private fun nearbyPlaces(latitude: Double, longitude: Double) {
@@ -139,27 +136,31 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
             .enqueue(object : Callback<NearbyPlaces> {
                 override fun onFailure(call: Call<NearbyPlaces>, t: Throwable) {
                     Toast.makeText(requireContext(), "" + t.message, Toast.LENGTH_LONG).show()
-                    Log.d("REQUEST_DEBUG",t.message!!)
+                    Log.d("REQUEST_DEBUG", t.message!!)
                 }
 
                 override fun onResponse(call: Call<NearbyPlaces>, response: Response<NearbyPlaces>) {
 
                     if (response!!.isSuccessful) {
 
-                        Log.d("REQUEST_DEBUG",response.message())
+                        Log.d("REQUEST_DEBUG", response.message())
                         for (i in 0 until response!!.body()!!.results!!.size) {
+                            val listPlaces = response.body()
 
                             val googlePlace = response.body()!!.results[i]
                             val lat = googlePlace.geometry!!.location!!.lat
                             val lng = googlePlace.geometry!!.location!!.lng
                             val placeName = googlePlace.name
                             val latLng = LatLng(lat, lng)
-                            Log.d("PLACE_DEBUG",placeName)
+                            Log.d("PLACE_DEBUG", placeName)
                             val markerOptions = MarkerOptions()
                                 .position(latLng)
                                 .title(placeName)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
                             mGoogleMap.addMarker(markerOptions)
+
+                            sendNearbyPlacesToActivity(listPlaces)
+
 
                         }
                     }
@@ -199,6 +200,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 // Ignore all other requests.
             }
         }
+    }
+
+
+    private fun sendNearbyPlacesToActivity(nearbyPlaces: NearbyPlaces?) {
+        val intent = Intent("DATA_ACTION")
+        intent.putExtra("NEARBY_PLACES_TO_ACTIVITY", nearbyPlaces)
+        Log.d("SEND_DEBUG",nearbyPlaces?.results.toString())
+        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
     }
 
 

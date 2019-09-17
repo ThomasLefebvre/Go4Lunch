@@ -1,7 +1,11 @@
 package fr.thomas.lefebvre.go4lunch.ui.activity
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import androidx.core.view.GravityCompat
 import androidx.appcompat.app.ActionBarDrawerToggle
 import android.view.MenuItem
@@ -23,10 +27,16 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import fr.thomas.lefebvre.go4lunch.R
+import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+     lateinit var nearbyPlaces: NearbyPlaces
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -55,7 +65,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         bottom_navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         getUserInformation()
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
+
+
+
+
+
+
     }
+
 
 
     override fun onBackPressed() {
@@ -168,7 +186,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_list -> {
-                replaceFragment(ListFragment())
+                sendNearbyPlaces()
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_workmates -> {
@@ -178,6 +196,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         false
     }
+
+    //Get nearbyPlaces from mapsFragment
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if ("DATA_ACTION" == intent.action) {
+                nearbyPlaces=intent.getParcelableExtra("NEARBY_PLACES_TO_ACTIVITY")!!
+                Log.d("RECEIVE_DEBUG",nearbyPlaces.results.toString())
+                Toast.makeText(context,nearbyPlaces.results[0].name,Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    //Send nearbyPlaces to listFragment
+    private fun sendNearbyPlaces(){
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        val listFragment=ListFragment()
+        val bundleListFragment=Bundle()
+        bundleListFragment.putParcelable("NEARBY_PLACES_TO_FRAGMENTS",nearbyPlaces)
+        listFragment.arguments=bundleListFragment
+        fragmentTransaction.replace(R.id.fragment_container, listFragment)
+        fragmentTransaction.commit()
+    }
+
+
 
 
 }

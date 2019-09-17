@@ -1,5 +1,9 @@
 package fr.thomas.lefebvre.go4lunch.ui.model
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
 data class Result(
     val geometry: Geometry,
     val icon: String,
@@ -16,4 +20,4 @@ data class Result(
     val types: List<String>,
     val user_ratings_total: Int,
     val vicinity: String
-)
+):Parcelable
