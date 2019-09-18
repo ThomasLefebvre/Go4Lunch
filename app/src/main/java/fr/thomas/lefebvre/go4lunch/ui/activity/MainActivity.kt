@@ -213,10 +213,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         val listFragment=ListFragment()
         val bundleListFragment=Bundle()
-        bundleListFragment.putParcelable("NEARBY_PLACES_TO_FRAGMENTS",nearbyPlaces)
-        listFragment.arguments=bundleListFragment
-        fragmentTransaction.replace(R.id.fragment_container, listFragment)
-        fragmentTransaction.commit()
+
+            bundleListFragment.putParcelable("NEARBY_PLACES_TO_FRAGMENTS",nearbyPlaces)
+            listFragment.arguments=bundleListFragment
+            fragmentTransaction.replace(R.id.fragment_container, listFragment)
+            fragmentTransaction.commit()
+
+
     }
 
 

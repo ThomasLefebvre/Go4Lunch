@@ -16,10 +16,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
-import fr.thomas.lefebvre.go4lunch.ui.activity.MainActivity
 import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import retrofit2.Call
@@ -144,25 +142,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                     if (response!!.isSuccessful) {
 
                         Log.d("REQUEST_DEBUG", response.message())
-                        for (i in 0 until response!!.body()!!.results!!.size) {
-                            val listPlaces = response.body()
-
-                            val googlePlace = response.body()!!.results[i]
-                            val lat = googlePlace.geometry!!.location!!.lat
-                            val lng = googlePlace.geometry!!.location!!.lng
-                            val placeName = googlePlace.name
-                            val latLng = LatLng(lat, lng)
-                            Log.d("PLACE_DEBUG", placeName)
-                            val markerOptions = MarkerOptions()
-                                .position(latLng)
-                                .title(placeName)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                            mGoogleMap.addMarker(markerOptions)
-
-                            sendNearbyPlacesToActivity(listPlaces)
-
-
-                        }
+                        addMarkerOnMap(response)
                     }
                 }
 
@@ -170,10 +150,48 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     }
 
+    private fun addMarkerOnMap(response:Response<NearbyPlaces>){
+        for (i in 0 until response!!.body()!!.results!!.size) {//boucle for add marker all places
+
+            val listPlaces = response.body()//set the list of places
+            val googlePlace = response.body()!!.results[i]//set the place in term of index
+            val lat = googlePlace.geometry!!.location!!.lat//set the latitude of place
+            val lng = googlePlace.geometry!!.location!!.lng//set the longitude of place
+            val placeName = googlePlace.name//set the name of place
+            val latLng = LatLng(lat, lng)//set the position of place
+            Log.d("PLACE_DEBUG", placeName)
+            val markerOptions = MarkerOptions()//add marker in the map
+                .position(latLng)
+                .title(placeName)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+            mGoogleMap.addMarker(markerOptions)
+
+
+            googlePlace.distance=calculDistance(mLastLocation.latitude,mLastLocation.longitude,lat,lng)
+            Log.d("DISTANCE_DEBUG",googlePlace.distance)
+
+            sendNearbyPlacesToActivity(listPlaces)//send nearby places data on the main activity
+
+
+
+        }
+    }
+
+    private fun calculDistance(currentLat:Double,currentLng:Double,placeLat:Double,placeLng:Double):String{
+        // Set array of distance
+        val distanceArray = floatArrayOf(0f)
+        //calcul distance between current location and places location
+        Location.distanceBetween(currentLat, currentLng,//current lat and lng
+            placeLat,placeLng,//place lat and lng
+            distanceArray)//array for the result
+        val distance:String=distanceArray[0].toInt().toString()//add the distance in the model
+        return distance
+    }
+
     private fun getUrl(latitude: Double, longitude: Double): String {
         val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json")
         googlePlaceUrl.append("?location=$latitude,$longitude")//set user position
-        googlePlaceUrl.append("&radius=1000")//=1km
+        googlePlaceUrl.append("&rankby=distance")//=1km
         googlePlaceUrl.append("&type=restaurant")//set type of search
         googlePlaceUrl.append("&key=${getString(R.string.api_browser_places)}")//api key
 
@@ -182,6 +200,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         return googlePlaceUrl.toString()
 
     }
+
+
+
+
 
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -209,6 +231,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         Log.d("SEND_DEBUG",nearbyPlaces?.results.toString())
         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
     }
+
+
 
 
 }

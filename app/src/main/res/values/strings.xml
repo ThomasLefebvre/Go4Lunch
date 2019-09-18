@@ -12,6 +12,9 @@
     <string name="menu_setting">Settings</string>
     <string name="menu_log_out">Logout</string>
     <string name="menu_search">Search</string>
+    <string name="menu_map_view">Map View</string>
+    <string name="menu_list_view">List View</string>
+    <string name="menu_workmates">Workmates</string>
     <string name="hungry">I\'m Hungry!</string>
     <string name="twitter_consumer_key" translatable="false">bSUt73cabbyd9ijD69Xd542G7</string>
     <string name="twitter_consumer_secret" translatable="false">S1OyJ0LrDf0z6DLiqQ4LtMbrMaOoMrIUhfLN2euAMytBrT4CCE</string>
