@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import fr.thomas.lefebvre.go4lunch.R
+import kotlinx.android.synthetic.main.app_bar_main.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -28,5 +29,8 @@ class WorkmatesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_workmates, container, false)
     }
 
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity!!.toolbar.title = getString(R.string.title_tool_bar_workmate)
+    }
 }

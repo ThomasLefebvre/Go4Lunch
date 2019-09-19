@@ -20,6 +20,7 @@ import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
+import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -64,7 +65,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        activity!!.toolbar.title = getString(R.string.title_tool_bar_hungry)
         initMap()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         // init service
@@ -96,28 +97,25 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     private fun setUpMap() {
 
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST
-            )
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) //check the location permission
+        {
+            requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST)//if location permission isn't request the permission
             return
         }
-        mGoogleMap.isMyLocationEnabled = true
-        mGoogleMap.uiSettings.isZoomControlsEnabled = true
-        fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity()) { location ->
-            if (location != null) {
+        mGoogleMap.isMyLocationEnabled = true //active the location
+        mGoogleMap.uiSettings.isZoomControlsEnabled = true//active the button zoom
+        fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity())//get the last location of user
+        { location ->
+            if (location != null) //if the last location isn't null
+            {
                 mLastLocation = location
-                var mLatitude = mLastLocation.latitude
-                var mLongitude = mLastLocation.longitude
+                var mLatitude = mLastLocation.latitude//set the latitude of location
+                var mLongitude = mLastLocation.longitude//set the longitude of location
                 Log.d("POSITION_DEBUG", mLatitude.toString())
                 Log.d("POSITION_DEBUG", mLongitude.toString())
-                nearbyPlaces(mLatitude, mLongitude)
-                val currentLatLng = LatLng(mLatitude, mLongitude)
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
+                nearbyPlaces(mLatitude, mLongitude)//set the nearby place in terme of user location
+                val currentLatLng = LatLng(mLatitude, mLongitude)////set the position of location
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))//move the camera on the user location
 
 
             }
@@ -130,14 +128,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         //build url request base on location
         val url = getUrl(latitude, longitude)
 
-        mService.getNearbyPlaces(url)
+        mService.getNearbyPlaces(url)//call the request
             .enqueue(object : Callback<NearbyPlaces> {
-                override fun onFailure(call: Call<NearbyPlaces>, t: Throwable) {
+                override fun onFailure(call: Call<NearbyPlaces>, t: Throwable) {//is request is failure
                     Toast.makeText(requireContext(), "" + t.message, Toast.LENGTH_LONG).show()
                     Log.d("REQUEST_DEBUG", t.message!!)
                 }
 
-                override fun onResponse(call: Call<NearbyPlaces>, response: Response<NearbyPlaces>) {
+                override fun onResponse(call: Call<NearbyPlaces>, response: Response<NearbyPlaces>) {//is request is success
 
                     if (response!!.isSuccessful) {
 
@@ -196,8 +194,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         googlePlaceUrl.append("&key=${getString(R.string.api_browser_places)}")//api key
 
         Log.d("URL_DEBUG", googlePlaceUrl.toString())
-
-        return googlePlaceUrl.toString()
+        return googlePlaceUrl.toString()//return the string url
 
     }
 
@@ -226,10 +223,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
 
     private fun sendNearbyPlacesToActivity(nearbyPlaces: NearbyPlaces?) {
-        val intent = Intent("DATA_ACTION")
-        intent.putExtra("NEARBY_PLACES_TO_ACTIVITY", nearbyPlaces)
+        val intent = Intent("DATA_ACTION")//init broadcast intent
+        intent.putExtra("NEARBY_PLACES_TO_ACTIVITY", nearbyPlaces)//init the data for send
         Log.d("SEND_DEBUG",nearbyPlaces?.results.toString())
-        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 
 

@@ -9,4 +9,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
     </androidx.recyclerview.widget.RecyclerView>
-  </FrameLayout>
+    <TextView
+            android:text="@string/message_list_location"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/textView_List_Empty"
+            android:gravity="center" android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:fontFamily="monospace"
+    android:padding="16dp"/>
+</FrameLayout>

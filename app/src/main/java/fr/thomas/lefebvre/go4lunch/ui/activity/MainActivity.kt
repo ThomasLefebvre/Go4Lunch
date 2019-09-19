@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.core.view.GravityCompat
@@ -27,6 +28,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
@@ -43,7 +45,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
-        toolbar.setTitle("I'm hungry")
+
         setSupportActionBar(toolbar)
 
 
@@ -186,7 +188,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_list -> {
-                sendNearbyPlaces()
+                if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)//check the location permission
+                {
+                    sendNearbyPlaces()//if permission is ok send nearby place
+                }
+                else
+                {
+                    replaceFragment(ListFragment())//if permission is denied list fragment is empty
+                }
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_workmates -> {
@@ -200,10 +209,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     //Get nearbyPlaces from mapsFragment
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if ("DATA_ACTION" == intent.action) {
-                nearbyPlaces=intent.getParcelableExtra("NEARBY_PLACES_TO_ACTIVITY")!!
-                Log.d("RECEIVE_DEBUG",nearbyPlaces.results.toString())
-                Toast.makeText(context,nearbyPlaces.results[0].name,Toast.LENGTH_LONG).show()
+            if ("DATA_ACTION" == intent.action)
+            {
+                if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                {
+                    nearbyPlaces=intent.getParcelableExtra("NEARBY_PLACES_TO_ACTIVITY")!!
+                    Log.d("RECEIVE_DEBUG",nearbyPlaces.results.toString())
+                    Toast.makeText(context,nearbyPlaces.results[0].name,Toast.LENGTH_LONG).show()
+                }
+
             }
         }
     }

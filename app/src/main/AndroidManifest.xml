@@ -13,18 +13,22 @@
             android:roundIcon="@mipmap/ic_launcher_go_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity android:name=".ui.activity.SettingsActivity">
+        </activity>
+
         <meta-data
                 android:name="com.google.android.geo.API_KEY"
                 android:value="@string/api_maps_key"/>
+
         <activity
                 android:name=".ui.activity.MainActivity"
                 android:label="@string/title_activity_main"
-                android:theme="@style/AppTheme.NoActionBar"
-                android:screenOrientation="portrait">
+                android:screenOrientation="portrait"
+                android:theme="@style/AppTheme.NoActionBar">
         </activity>
-           <activity android:name=".ui.activity.WelcomeActivity"
-           android:theme="@style/AppThemeWelcome"
-                 >
+        <activity
+                android:name=".ui.activity.WelcomeActivity"
+                android:theme="@style/AppThemeWelcome">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
