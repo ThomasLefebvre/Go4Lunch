@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
-
         setSupportActionBar(toolbar)
 
 
@@ -114,7 +113,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.nav_settings -> {
-                //TODO
+                finish()
+                val intentSettingsActivity=Intent(this,SettingsActivity::class.java)
+                startActivity(intentSettingsActivity)
                 return true
             }
             R.id.nav_logout -> {
