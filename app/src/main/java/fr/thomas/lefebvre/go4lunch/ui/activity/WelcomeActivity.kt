@@ -6,15 +6,16 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import fr.thomas.lefebvre.go4lunch.R
 import java.util.*
+import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper as UserHelper
 
 class WelcomeActivity : AppCompatActivity() {
 
-    private val MY_REQUEST_CODE: Int = 123
+    private val REQUEST_CODE: Int = 123
     lateinit var providers: List<AuthUI.IdpConfig>
+     private var userHelper: UserHelper= UserHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,7 @@ class WelcomeActivity : AppCompatActivity() {
                 .setAvailableProviders(providers)
                 .setTheme(R.style.SignTheme)
                 .setIsSmartLockEnabled(false)
-                .build(), MY_REQUEST_CODE
+                .build(), REQUEST_CODE
         )
 
     }
@@ -62,12 +63,12 @@ class WelcomeActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == MY_REQUEST_CODE) {
+        if (requestCode == REQUEST_CODE) {
 
             if (resultCode == Activity.RESULT_OK) {
                 val user = FirebaseAuth.getInstance().currentUser//get current user
                 Toast.makeText(this, " ${user?.displayName} is connected", Toast.LENGTH_LONG).show()
-
+                createUserOnFirestoreDataBase()
                 val intentMainActivity = Intent(this, MainActivity::class.java)
                 finish()
                 startActivity(intentMainActivity)
@@ -77,4 +78,16 @@ class WelcomeActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun createUserOnFirestoreDataBase(){
+        val user=FirebaseAuth.getInstance().currentUser//get current user
+        val name=user?.displayName
+        val email=user?.email
+        val photoUrl=user?.photoUrl.toString()
+        val uidUser=user?.uid
+        userHelper.createUser(uidUser!!,name!!,email!!,photoUrl,"","")
+
+
+    }
+
 }

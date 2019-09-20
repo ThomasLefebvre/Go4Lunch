@@ -1,6 +1,7 @@
 package fr.thomas.lefebvre.go4lunch.ui.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.opengl.Visibility
 import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
@@ -19,7 +20,7 @@ import kotlin.math.round
 import kotlin.math.truncate
 
 
-class NearbyPlacesAdapter (private val listPlaces:List<Result>, private val listener:(Result)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
+class NearbyPlacesAdapter (val context:Context,private val listPlaces:List<Result>, private val listener:(Result)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
 
 
 
@@ -33,7 +34,7 @@ class NearbyPlacesAdapter (private val listPlaces:List<Result>, private val list
     }
 
 
-    override fun onBindViewHolder(p0: ViewHolder, p1: Int) = p0.bind(listPlaces[p1],listener)
+    override fun onBindViewHolder(p0: ViewHolder, p1: Int) = p0.bind(context,listPlaces[p1],listener)
 
     class ViewHolder(elementList: View):RecyclerView.ViewHolder(elementList){
 
@@ -41,7 +42,7 @@ class NearbyPlacesAdapter (private val listPlaces:List<Result>, private val list
 
 
 
-        fun bind(place:Result, listener:(Result)->Unit){
+        fun bind(context: Context,place:Result, listener:(Result)->Unit){
             //set the graphics element for the recycler view
             val tvNamePlace: TextView =itemView.findViewById(R.id.textViewName)
             val tvAddress: TextView =itemView.findViewById(R.id.textViewAddress)
@@ -56,7 +57,7 @@ class NearbyPlacesAdapter (private val listPlaces:List<Result>, private val list
 
             //get the photo reference
             if(place.photos!=null){
-                val photoUrl="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+place.photos[0].photo_reference+"&key=AIzaSyCYCJ0NjpFaTmCMqRQRn2i20vzlYyd5kOc"
+                val photoUrl="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+place.photos[0].photo_reference+"&key="+context.resources.getString(R.string.api_browser_places)
                 Picasso.get().load(photoUrl).into(photoPlace)
             }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="fr.thomas.lefebvre.go4lunch">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -13,7 +14,14 @@
             android:roundIcon="@mipmap/ic_launcher_go_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".ui.activity.SettingsActivity">
+        <activity
+                android:name=".ui.activity.DetailsRestaurantActivity"
+                android:label="@string/title_activity_details_restaurant"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+                android:name=".ui.activity.SettingsActivity"
+                android:theme="@style/AppTheme">
         </activity>
 
         <meta-data

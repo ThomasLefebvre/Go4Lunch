@@ -76,7 +76,7 @@ class ListFragment : Fragment() {
         view!!.recyclerView.apply {
             layoutManager= LinearLayoutManager(activity)
             addItemDecoration(DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL))
-            adapter= NearbyPlacesAdapter(listPlaces) { itemClick: Result ->
+            adapter= NearbyPlacesAdapter(context,listPlaces) { itemClick: Result ->
                 articleClick(itemClick)
             }
         }

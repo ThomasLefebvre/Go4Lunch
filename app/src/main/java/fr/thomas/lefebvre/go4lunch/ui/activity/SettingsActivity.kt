@@ -33,7 +33,7 @@ class SettingsActivity : AppCompatActivity() {
         Picasso.get().load(user?.photoUrl).into(circleImageView_Setting)//set the user picture
     }
 
-    private fun deleteAccount() {
+    private fun deleteAccount() {//TODO DELETE USER ON DATABASE
         if (user != null) {
             AuthUI.getInstance().delete(this)
                 .addOnCompleteListener {
@@ -68,7 +68,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    private fun clickDeleteButton(){
+   private fun clickDeleteButton(){
     imageButton_Delete_Account.setOnClickListener {
         alertDialogDeleteAccount()
     }
