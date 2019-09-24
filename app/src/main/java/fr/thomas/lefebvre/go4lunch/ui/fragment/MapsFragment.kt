@@ -17,8 +17,9 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import fr.thomas.lefebvre.go4lunch.R
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
-import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
@@ -52,6 +53,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //API service
     lateinit var mService: IGoogleAPIService
+
+    //list of restaurant
+    lateinit var listRestaurant:ArrayList<RestaurantFormatted>
 
 
     override fun onCreateView(
@@ -141,6 +145,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
                         Log.d("REQUEST_DEBUG", response.message())
                         addMarkerOnMap(response)
+                        sendNearbyPlacesToActivity(listRestaurant!!)//send nearby places data on the main activity
                     }
                 }
 
@@ -149,6 +154,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
     private fun addMarkerOnMap(response:Response<NearbyPlaces>){
+        listRestaurant=ArrayList()
         for (i in 0 until response!!.body()!!.results!!.size) {//boucle for add marker all places
 
             val listPlaces = response.body()//set the list of places
@@ -163,14 +169,25 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 .title(placeName)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
             mGoogleMap.addMarker(markerOptions)
-
-
-            googlePlace.distance=calculDistance(mLastLocation.latitude,mLastLocation.longitude,lat,lng)
-            Log.d("DISTANCE_DEBUG",googlePlace.distance)
-
-            sendNearbyPlacesToActivity(listPlaces)//send nearby places data on the main activity
-
-
+            val distance=calculDistance(mLastLocation.latitude,mLastLocation.longitude,lat,lng)
+            Log.d("DISTANCE_DEBUG",distance)
+            val openHours: Boolean?
+            if(googlePlace.opening_hours!=null){
+                openHours=googlePlace.opening_hours.open_now
+            }
+            else openHours=null
+            val rating:Double?
+            if(googlePlace.rating!=null){
+                rating=googlePlace.rating
+            }
+            else rating=null
+            val photoUrl:String?
+            if(googlePlace.photos!=null){
+                photoUrl=googlePlace.photos[0].photo_reference
+            }
+            else photoUrl=null
+            val restaurantFormatted=RestaurantFormatted(googlePlace.place_id,placeName,googlePlace.vicinity,openHours,rating,photoUrl,distance)//set restaurant
+            listRestaurant.add(restaurantFormatted)//add restaurant on list restaurant
 
         }
     }
@@ -222,10 +239,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-    private fun sendNearbyPlacesToActivity(nearbyPlaces: NearbyPlaces?) {
+    private fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
         val intent = Intent("DATA_ACTION")//init broadcast intent
-        intent.putExtra("NEARBY_PLACES_TO_ACTIVITY", nearbyPlaces)//init the data for send
-        Log.d("SEND_DEBUG",nearbyPlaces?.results.toString())
+        intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
+        Log.d("SEND_DEBUG",listRestaurant[0].name)
         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 

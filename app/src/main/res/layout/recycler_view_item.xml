@@ -35,7 +35,6 @@
             app:layout_constraintBottom_toTopOf="@+id/textViewOpenHours" app:layout_constraintEnd_toStartOf="@+id/guideline"
             android:layout_marginEnd="8dp"/>
     <TextView
-            android:text="TextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/textViewOpenHours"
@@ -67,17 +66,19 @@
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageStar2"
             android:layout_marginEnd="8dp"
-    />
+            android:visibility="gone"/>
     <ImageView
             android:layout_width="16dp"
             android:layout_height="16dp" app:srcCompat="@android:drawable/btn_star_big_on"
             android:id="@+id/imageStar2"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imageStar3" android:layout_marginEnd="8dp"/>
+            app:layout_constraintEnd_toStartOf="@+id/imageStar3" android:layout_marginEnd="8dp"
+            android:visibility="gone"/>
     <ImageView
             android:layout_width="16dp"
             android:layout_height="16dp" app:srcCompat="@android:drawable/btn_star_big_on"
             android:id="@+id/imageStar3"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/photoPlace" android:layout_marginEnd="8dp"/>
+            app:layout_constraintEnd_toStartOf="@+id/photoPlace" android:layout_marginEnd="8dp"
+            android:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

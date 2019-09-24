@@ -1,9 +1,6 @@
 package fr.thomas.lefebvre.go4lunch.ui.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.opengl.Visibility
-import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,15 +9,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
-import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
-import fr.thomas.lefebvre.go4lunch.ui.model.Result
-import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
-import java.lang.StringBuilder
-import kotlin.math.round
-import kotlin.math.truncate
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 
 
-class NearbyPlacesAdapter (val context:Context,private val listPlaces:List<Result>, private val listener:(Result)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
+class NearbyPlacesAdapter (val context:Context, private val listPlaces:List<RestaurantFormatted>, private val listener:(RestaurantFormatted)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
 
 
 
@@ -42,7 +34,7 @@ class NearbyPlacesAdapter (val context:Context,private val listPlaces:List<Resul
 
 
 
-        fun bind(context: Context,place:Result, listener:(Result)->Unit){
+        fun bind(context: Context, restaurant:  RestaurantFormatted, listener:(RestaurantFormatted)->Unit){
             //set the graphics element for the recycler view
             val tvNamePlace: TextView =itemView.findViewById(R.id.textViewName)
             val tvAddress: TextView =itemView.findViewById(R.id.textViewAddress)
@@ -53,31 +45,40 @@ class NearbyPlacesAdapter (val context:Context,private val listPlaces:List<Resul
             val starTwo:ImageView=itemView.findViewById(R.id.imageStar2)
             val starThree:ImageView=itemView.findViewById(R.id.imageStar3)
 
+            tvNamePlace.text=restaurant.name//set name of place
+            tvAddress.text=restaurant.address//set adress of place
 
-
-            //get the photo reference
-            if(place.photos!=null){
-                val photoUrl="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+place.photos[0].photo_reference+"&key="+context.resources.getString(R.string.api_browser_places)
+            //set photo of place
+            if (restaurant.photoUrl!=null){
+                val photoUrl="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+restaurant.photoUrl+"&key="+context.resources.getString(R.string.api_browser_places)
                 Picasso.get().load(photoUrl).into(photoPlace)
             }
 
-
-            tvNamePlace.text=place.name//set the name of place
-            tvAddress.text = place.vicinity//set the adress of place
-            tvDistance.text= place.distance+"m"//set the distance of current location
-
             //set the rating star
-            if(place.rating<=2){
-                starOne.visibility=View.GONE
-                starTwo.visibility=View.GONE
+            if(restaurant.rating!!>=4.0){
+                starOne.visibility=View.VISIBLE
+                starTwo.visibility=View.VISIBLE
+                starThree.visibility=View.VISIBLE
             }
-            if (place.rating<=4&&place.rating>2){
-                starOne.visibility=View.GONE
+
+
+
+            //set open now of place
+            if(restaurant.openNow==true){
+                tvOpenHours.text=context.getString(R.string.open)
             }
+            else if(restaurant.openNow==false){
+                tvOpenHours.text=context.getString(R.string.closed)
+            }
+
+            //set distance
+            tvDistance.text=restaurant.distance
+
 
 
             itemView.setOnClickListener {//set the click listener
-                listener(place) }
+                listener(restaurant) }
         }
     }
 }
+

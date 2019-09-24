@@ -14,9 +14,10 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
+import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.adapter.NearbyPlacesAdapter
-import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
-import fr.thomas.lefebvre.go4lunch.ui.model.Result
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_list.*
 import kotlinx.android.synthetic.main.fragment_list.view.*
@@ -33,7 +34,8 @@ private const val ARG_PARAM2 = "param2"
  */
 class ListFragment : Fragment() {
 
-    lateinit var nearbyPlaces: NearbyPlaces
+    lateinit var listRestaurant:ArrayList<RestaurantFormatted>
+
 
 
     override fun onCreateView(
@@ -66,23 +68,27 @@ class ListFragment : Fragment() {
     }
 
     private fun initBundleWithNearbyRestaurant(bundle:Bundle?){
-        nearbyPlaces = bundle?.getParcelable<NearbyPlaces>("NEARBY_PLACES_TO_FRAGMENTS")!!
-        Toast.makeText(requireContext(),nearbyPlaces.results[0].name,Toast.LENGTH_LONG).show()
-        val listPlaces=nearbyPlaces.results
-        setRecyclerView(listPlaces)
+        listRestaurant = bundle?.getParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS")!!
+        setRecyclerView(listRestaurant)
     }
 
-    private fun setRecyclerView(listPlaces:List<Result>){
+    private fun setRecyclerView(listPlaces:List<RestaurantFormatted>){
         view!!.recyclerView.apply {
             layoutManager= LinearLayoutManager(activity)
             addItemDecoration(DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL))
-            adapter= NearbyPlacesAdapter(context,listPlaces) { itemClick: Result ->
+            adapter= NearbyPlacesAdapter(context,listPlaces) { itemClick: RestaurantFormatted ->
                 articleClick(itemClick)
             }
         }
     }
 
-    fun articleClick(itemClick: Result){//
+    private fun articleClick(itemClick: RestaurantFormatted){//start details activity if click on article
+
+        val intentDetails=Intent(requireContext(),DetailsRestaurantActivity::class.java)
+        intentDetails.putExtra("PlaceId",itemClick.id)
+        startActivity(intentDetails)
+        Toast.makeText(requireContext(),itemClick.rating.toString(),Toast.LENGTH_LONG).show()
+
 
     }
 

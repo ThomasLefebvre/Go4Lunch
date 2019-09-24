@@ -61,12 +61,7 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun onBackPressed() {
-        finish()
-        val intentMainActivity = Intent(this, MainActivity::class.java)
-        startActivity(intentMainActivity)
-        super.onBackPressed()
-    }
+
 
    private fun clickDeleteButton(){
     imageButton_Delete_Account.setOnClickListener {

@@ -31,12 +31,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import fr.thomas.lefebvre.go4lunch.R
-import fr.thomas.lefebvre.go4lunch.ui.model.NearbyPlaces
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-     lateinit var nearbyPlaces: NearbyPlaces
+     lateinit var listRestaurant:ArrayList<RestaurantFormatted>
 
 
 
@@ -67,10 +67,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         getUserInformation()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
-
-
-
-
 
 
     }
@@ -113,7 +109,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.nav_settings -> {
-                finish()
                 val intentSettingsActivity=Intent(this,SettingsActivity::class.java)
                 startActivity(intentSettingsActivity)
                 return true
@@ -214,9 +209,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             {
                 if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 {
-                    nearbyPlaces=intent.getParcelableExtra("NEARBY_PLACES_TO_ACTIVITY")!!
-                    Log.d("RECEIVE_DEBUG",nearbyPlaces.results.toString())
-                    Toast.makeText(context,nearbyPlaces.results[0].name,Toast.LENGTH_LONG).show()
+                    listRestaurant=intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
+                    Log.d("RECEIVE_DEBUG",listRestaurant[0].name)
                 }
 
             }
@@ -229,7 +223,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val listFragment=ListFragment()
         val bundleListFragment=Bundle()
 
-            bundleListFragment.putParcelable("NEARBY_PLACES_TO_FRAGMENTS",nearbyPlaces)
+            bundleListFragment.putParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS",listRestaurant)
             listFragment.arguments=bundleListFragment
             fragmentTransaction.replace(R.id.fragment_container, listFragment)
             fragmentTransaction.commit()
@@ -237,7 +231,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+    }
 
-
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+    }
 }
