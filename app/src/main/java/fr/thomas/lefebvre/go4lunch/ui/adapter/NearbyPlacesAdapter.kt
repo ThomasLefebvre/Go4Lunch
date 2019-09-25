@@ -10,23 +10,26 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import java.lang.StringBuilder
 
 
-class NearbyPlacesAdapter (val context:Context, private val listPlaces:List<RestaurantFormatted>, private val listener:(RestaurantFormatted)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
+class NearbyPlacesAdapter (val context:Context, private val listRestaurant:List<RestaurantFormatted>, private val listener:(RestaurantFormatted)-> Unit): RecyclerView.Adapter<NearbyPlacesAdapter.ViewHolder>(){
 
 
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
-        val v: View = LayoutInflater.from(p0.context).inflate(R.layout.recycler_view_item,p0,false)
-        return ViewHolder(v)
+        val view: View = LayoutInflater.from(p0.context).inflate(R.layout.recycler_view_item,p0,false)
+        return ViewHolder(view)
     }
 
     override fun getItemCount(): Int {
-        return listPlaces.size
+        return listRestaurant.size
     }
 
 
-    override fun onBindViewHolder(p0: ViewHolder, p1: Int) = p0.bind(context,listPlaces[p1],listener)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(context,listRestaurant[position],listener)
+    }
 
     class ViewHolder(elementList: View):RecyclerView.ViewHolder(elementList){
 
@@ -34,7 +37,7 @@ class NearbyPlacesAdapter (val context:Context, private val listPlaces:List<Rest
 
 
 
-        fun bind(context: Context, restaurant:  RestaurantFormatted, listener:(RestaurantFormatted)->Unit){
+        fun bind(context: Context, restaurant:  RestaurantFormatted, listener:(RestaurantFormatted)->Unit)= with(itemView){
             //set the graphics element for the recycler view
             val tvNamePlace: TextView =itemView.findViewById(R.id.textViewName)
             val tvAddress: TextView =itemView.findViewById(R.id.textViewAddress)
@@ -53,12 +56,19 @@ class NearbyPlacesAdapter (val context:Context, private val listPlaces:List<Rest
                 val photoUrl="https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="+restaurant.photoUrl+"&key="+context.resources.getString(R.string.api_browser_places)
                 Picasso.get().load(photoUrl).into(photoPlace)
             }
-
+            //TODO SEE WITH VIRGILE FOR THE STAR
             //set the rating star
-            if(restaurant.rating!!>=4.0){
+            if(restaurant.rating!!>=4.0){//if rating superior 4
                 starOne.visibility=View.VISIBLE
                 starTwo.visibility=View.VISIBLE
                 starThree.visibility=View.VISIBLE
+            }
+            else if(restaurant.rating!!>=2.0&&restaurant.rating!!<4.0){//if rating is between 2 to inferior 4
+                starOne.visibility=View.VISIBLE
+                starTwo.visibility=View.VISIBLE
+            }
+            else if (restaurant.rating!!<2.0){//if rating is inferior 2
+                starOne.visibility=View.VISIBLE
             }
 
 
@@ -72,9 +82,8 @@ class NearbyPlacesAdapter (val context:Context, private val listPlaces:List<Rest
             }
 
             //set distance
-            tvDistance.text=restaurant.distance
-
-
+            val distance=StringBuilder(restaurant.distance+"m")
+            tvDistance.text=distance.toString()
 
             itemView.setOnClickListener {//set the click listener
                 listener(restaurant) }
