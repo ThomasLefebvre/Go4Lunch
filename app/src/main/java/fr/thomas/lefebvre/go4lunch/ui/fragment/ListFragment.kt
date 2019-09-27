@@ -87,7 +87,7 @@ class ListFragment : Fragment() {
         val intentDetails=Intent(requireContext(),DetailsRestaurantActivity::class.java)
         intentDetails.putExtra("PlaceId",itemClick.id)
         startActivity(intentDetails)
-        Toast.makeText(requireContext(),itemClick.rating.toString(),Toast.LENGTH_LONG).show()
+
 
 
     }

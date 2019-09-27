@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content" android:id="@+id/textViewNameRestaurantDetail"
                 android:textColor="@color/white"
                 app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"
-                android:text="Le palermo" android:layout_marginBottom="8dp"
+                android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toTopOf="@+id/textViewAdressRestaurantDetail"/>
         <TextView
                 android:textColor="@color/white"
@@ -48,7 +48,6 @@
                 android:layout_marginStart="16dp"
                 android:numStars="3"
                 android:stepSize="0.5"
-                android:rating="2.5"
                 style="@style/Widget.AppCompat.RatingBar.Small"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewNameRestaurantDetail"
                 app:layout_constraintTop_toTopOf="@+id/textViewNameRestaurantDetail"
@@ -56,7 +55,7 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true" app:srcCompat="@drawable/ic_check_white_24dp"
+                 app:srcCompat="@drawable/ic_check_white_24dp"
                 android:id="@+id/rejoinActionButton"
                 android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toTopOf="@+id/textViewAdressRestaurantDetail"

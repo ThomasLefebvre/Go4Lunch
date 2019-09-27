@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 replaceFragment(MapsFragment())
                 return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_list -> {
+            R.id.navigation_list -> {//TODO IF LOCATION IS DISABLED
                 if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)//check the location permission
                 {
                     sendNearbyPlaces()//if permission is ok send nearby place
@@ -210,7 +210,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 {
                     listRestaurant=intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
-                    Log.d("RECEIVE_DEBUG",listRestaurant[0].name)
                 }
 
             }

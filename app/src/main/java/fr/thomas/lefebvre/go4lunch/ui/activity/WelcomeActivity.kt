@@ -6,10 +6,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import fr.thomas.lefebvre.go4lunch.R
 import java.util.*
 import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper as UserHelper
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentSnapshot
+
 
 class WelcomeActivity : AppCompatActivity() {
 
@@ -55,9 +60,7 @@ class WelcomeActivity : AppCompatActivity() {
 
     private fun checkCurrentUserIsConnected(): Boolean {
         val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            return true
-        } else return false
+        return user != null
     }
 
 
@@ -81,13 +84,27 @@ class WelcomeActivity : AppCompatActivity() {
 
     private fun createUserOnFirestoreDataBase(){
         val user=FirebaseAuth.getInstance().currentUser//get current user
-        val name=user?.displayName
-        val email=user?.email
-        val photoUrl=user?.photoUrl.toString()
-        val uidUser=user?.uid
-        userHelper.createUser(uidUser!!,name!!,email!!,photoUrl,"","")
+        val name=user?.displayName//get name current user
+        val email=user?.email//get email current user
+        val photoUrl=user?.photoUrl.toString()//get
+        val uidUser=user?.uid//get id current user
+        userHelper.getUser(uidUser!!).addOnCompleteListener { doc ->//get the response
+            if(!doc.result!!.exists()){//check if user not exist
+                userHelper.createUser(uidUser,name!!,email!!,photoUrl,"","").addOnFailureListener(onFailureListener())//create user in data base if not exist
+            }
+        }
 
 
+    }
+
+    protected fun onFailureListener(): OnFailureListener {
+        return OnFailureListener {
+            Toast.makeText(
+                applicationContext,
+                getString(fr.thomas.lefebvre.go4lunch.R.string.error),
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
 }

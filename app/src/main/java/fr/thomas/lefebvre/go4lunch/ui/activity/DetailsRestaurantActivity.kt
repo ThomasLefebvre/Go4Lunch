@@ -35,6 +35,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         googlePlacesDetailsApi()
         startWebViewActivity()
         startCallActivity()
+        rejoinButtonClick()
 
 
     }
@@ -62,6 +63,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
                         initDetailsRestaurant(response)
 
 
+
                     }
                 }
 
@@ -72,11 +74,9 @@ class DetailsRestaurantActivity : AppCompatActivity() {
     private fun getUrl(placeId: String): String {
         val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/details/")
         googlePlaceUrl.append("json?place_id=$placeId")//set user position
-        googlePlaceUrl.append(
-            "&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=${getString(
+        googlePlaceUrl.append("&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=${getString(
                 R.string.api_browser_places
-            )}"
-        )//set parameters and api key
+            )}")//set parameters and api key
         Log.d("URL_DEBUG", googlePlaceUrl.toString())
         return googlePlaceUrl.toString()//return the string url
     }
@@ -91,25 +91,12 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
     }
 
-    private fun initStars(rating: Double) {
-        if (rating > 1) {//if rating superior 1.5
-            imageStar1.visibility = View.VISIBLE
-            Log.i("DEBUG_STAR", rating.toString() + (rating < 1))
-
-        } else if (rating > 3) {//if rating superior 3
-            imageStar1.visibility = View.VISIBLE
-            imageStar2.visibility = View.VISIBLE
-            Log.i("DEBUG_STAR", rating.toString() + (rating < 3))
-        } else if (rating > 4) {//if rating superior 4.5
-            imageStar1.visibility = View.VISIBLE
-            imageStar2.visibility = View.VISIBLE
-            imageStar3.visibility = View.VISIBLE
-            Log.i("DEBUG_STAR", rating.toString() + (rating < 4))
-        } else {
-            imageStar1.visibility = View.GONE
-            imageStar2.visibility = View.GONE
-            imageStar3.visibility = View.GONE
-        }
+    private fun initStars(rating: Double) {//set the rating bar with the rating google map
+        val ratingBarFloat = (rating * (3.0f / 5.0f))//convert rating to 3.0
+        val ratingBarFloatRound = Math.round(ratingBarFloat * 10.0f) / 10.0f//round rating to 1 decimal
+        if (ratingBarFloatRound != 0.0f) {//if rating not null = set the rating on rating bar (minimum rating google is 1 of 5, if rating =0.0 = not rating)
+            ratingBar.rating = ratingBarFloatRound
+        } else ratingBar.visibility = View.GONE//if rating null = gone the rating bar
     }
 
     private fun initWebSite(webSite: String) {
@@ -118,7 +105,6 @@ class DetailsRestaurantActivity : AppCompatActivity() {
             textViewSite.visibility = View.VISIBLE//display the text
             webSiteUrl = webSite///set the website url in variable
         }
-
     }
 
     private fun initCall(phoneNumber: String) {
@@ -156,6 +142,12 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         imageButtonCall.setOnClickListener {
             val intentCall = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumberIntent"))
             startActivity(intentCall)
+        }
+    }
+
+    private fun rejoinButtonClick(){//TODO REJOIN BUTTON ACTION
+        rejoinActionButton.setOnClickListener {
+
         }
     }
 
