@@ -50,8 +50,6 @@ class NearbyPlacesAdapter(
         fun bind(context: Context, restaurant: RestaurantFormatted, listener: (RestaurantFormatted) -> Unit) =
             with(itemView) {
                 //set the graphics element for the recycler view
-
-
                 tvNamePlace.text = restaurant.name//set name of place
                 tvAddress.text = restaurant.address//set adress of place
 

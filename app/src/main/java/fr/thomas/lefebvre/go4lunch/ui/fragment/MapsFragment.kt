@@ -20,6 +20,7 @@ import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
+import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
@@ -37,7 +38,11 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 
-class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,GoogleMap.OnInfoWindowClickListener{
+
+
+
+
     //google maps
     lateinit var mGoogleMap: GoogleMap
     lateinit var mMapVIew: MapView
@@ -92,14 +97,25 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         mGoogleMap = googleMap
         setUpMap()
         mGoogleMap.setOnMarkerClickListener(this)
+        mGoogleMap.setOnInfoWindowClickListener(this)
 
 
     }
+
+
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-        Toast.makeText(requireContext(), p0!!.snippet, Toast.LENGTH_LONG).show()
         return false
     }
+
+    override fun onInfoWindowClick(p0: Marker?) {
+        val indexRestaurant:Int=p0!!.zIndex.toInt()
+        val intentDetails=Intent(requireContext(),DetailsRestaurantActivity::class.java)
+        intentDetails.putExtra("PlaceId",listRestaurant[indexRestaurant].id)
+        startActivity(intentDetails)
+    }
+
+
 
     private fun setUpMap() {
 
@@ -122,8 +138,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
             if (location != null) //if the last location isn't null
             {
                 mLastLocation = location
-                var mLatitude = mLastLocation.latitude//set the latitude of location
-                var mLongitude = mLastLocation.longitude//set the longitude of location
+                val mLatitude = mLastLocation.latitude//set the latitude of location
+                val mLongitude = mLastLocation.longitude//set the longitude of location
                 Log.d("POSITION_DEBUG", mLatitude.toString())
                 Log.d("POSITION_DEBUG", mLongitude.toString())
                 nearbyPlaces(mLatitude, mLongitude)//set the nearby place in terme of user location
@@ -185,7 +201,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 .position(latLng)
                 .title(placeName)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                .snippet(googlePlace.place_id)
+                .zIndex(i.toFloat())
+
             mGoogleMap.addMarker(markerOptions)
             val distance = calculDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
             Log.d("DISTANCE_DEBUG", distance)
@@ -268,6 +285,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
 
 }
+
+
 
 
 

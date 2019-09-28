@@ -6,14 +6,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import fr.thomas.lefebvre.go4lunch.R
 import java.util.*
 import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper as UserHelper
 import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentSnapshot
 
 
 class WelcomeActivity : AppCompatActivity() {
@@ -28,6 +25,7 @@ class WelcomeActivity : AppCompatActivity() {
 
         //init
         providers = Arrays.asList<AuthUI.IdpConfig>(
+            AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.TwitterBuilder().build(),
             AuthUI.IdpConfig.FacebookBuilder().build(),//facebook login
             AuthUI.IdpConfig.GoogleBuilder().build()
@@ -48,6 +46,7 @@ class WelcomeActivity : AppCompatActivity() {
                 .setAvailableProviders(providers)
                 .setTheme(R.style.SignTheme)
                 .setIsSmartLockEnabled(false)
+                .setLogo(R.drawable.restaurant)
                 .build(), REQUEST_CODE
         )
 
@@ -93,8 +92,6 @@ class WelcomeActivity : AppCompatActivity() {
                 userHelper.createUser(uidUser,name!!,email!!,photoUrl,"","").addOnFailureListener(onFailureListener())//create user in data base if not exist
             }
         }
-
-
     }
 
     protected fun onFailureListener(): OnFailureListener {
