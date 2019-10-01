@@ -10,12 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import fr.thomas.lefebvre.go4lunch.R
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
-import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.adapter.NearbyPlacesAdapter
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -55,7 +53,7 @@ class ListFragment : Fragment() {
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
             initBundleWithNearbyRestaurant(bundle)
-            textView_List_Empty.visibility=View.GONE
+            textView_List_Empty_Location_No_Permission.visibility=View.GONE
         }
         activity!!.toolbar.title = getString(R.string.title_tool_bar_hungry)
 
@@ -69,7 +67,13 @@ class ListFragment : Fragment() {
 
     private fun initBundleWithNearbyRestaurant(bundle:Bundle?){
         listRestaurant = bundle?.getParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS")!!
-        setRecyclerView(listRestaurant)
+        if (listRestaurant.size==0){
+            textView_List_Empty.visibility=View.VISIBLE
+
+        }
+        else{
+            setRecyclerView(listRestaurant)
+        }
     }
 
     private fun setRecyclerView(listPlaces:List<RestaurantFormatted>){

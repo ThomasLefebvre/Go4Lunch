@@ -23,11 +23,15 @@
     <string name="pop_pup_message_delete_account">Are you sure to want delete your account?</string>
     <string name="pop_pup_yes">Yes</string>
     <string name="pop_pup_no">No</string>
+    <string name="pop_pup_message_choice_restaurant">Do you want choice this restaurant for your lunch?</string>
+    <string name="toast_message_choice_restaurant">Great! Have a good meal!</string>
     <string name="message_permission_location">This permission is needed to locate you.</string>
     <string name="message_activate">Activate</string>
     <string name="your_position">Your Position</string>
     <string name="message_list_location">Please activate your location service to view the list of restaurants nearby.
     </string>
+    <string name="toast_message_dont_make_choice">Please select a restaurant for your lunch…</string>
+    <string name="message_list_no_result">No results nearby your location.</string>
     <string name="title_tool_bar_hungry">I\'m hungry!</string>
     <string name="title_tool_bar_workmate">Workmates</string>
     <string name="title_tool_bar_settings">Settings</string>
@@ -41,6 +45,8 @@
     <string name="like">LIKE</string>
     <string name="website">WEBSITE</string>
     <string name="error">error</string>
+    <string name="is_eating_at">is eating at</string>
+    <string name="not_decided">has not decided yet</string>
 
 
 </resources>

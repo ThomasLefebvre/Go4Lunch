@@ -12,8 +12,17 @@
     <TextView
             android:text="@string/message_list_location"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/textView_List_Empty"
+            android:layout_height="match_parent" android:id="@+id/textView_List_Empty_Location_No_Permission"
             android:gravity="center" android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:fontFamily="monospace"
     android:padding="16dp"/>
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/message_list_no_result"
+            android:id="@+id/textView_List_Empty"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:fontFamily="monospace"
+            android:visibility="gone"/>
 </FrameLayout>

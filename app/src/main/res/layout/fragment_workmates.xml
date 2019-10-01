@@ -4,11 +4,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context=".ui.fragment.WorkmatesFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Workmates Fragment"/>
-
+            android:layout_height="match_parent" android:id="@+id/recycler_view_all_user"/>
 </FrameLayout>

@@ -20,7 +20,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        val toolbar: Toolbar = findViewById(R.id.toolbar_Activity_Settings)
+        val toolbar: Toolbar = this.findViewById(R.id.toolbar_Activity_Settings)
         toolbar.title = getString(R.string.title_tool_bar_settings)
         setSupportActionBar(toolbar)
         getCurrentUser()
@@ -30,8 +30,12 @@ class SettingsActivity : AppCompatActivity() {
     private fun getCurrentUser() {
         textView_Settings_Name.text = user?.displayName//set the user name
         textView_Settings_Mail.text = user?.email//set the user mail
-        Picasso.get().load(user?.photoUrl).into(circleImageView_Setting)//set the user picture
+        if(user?.photoUrl!=null){
+            Picasso.get().load(user?.photoUrl).into(circleImageView_Setting)//set the user picture
+        }
+
     }
+
 
     private fun deleteAccount() {//TODO DELETE USER ON DATABASE
         if (user != null) {

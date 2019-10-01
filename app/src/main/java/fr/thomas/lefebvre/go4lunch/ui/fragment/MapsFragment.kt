@@ -18,10 +18,12 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
+import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
 import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,9 +40,8 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 
-class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,GoogleMap.OnInfoWindowClickListener{
-
-
+class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
+    GoogleMap.OnInfoWindowClickListener {
 
 
     //google maps
@@ -61,6 +62,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //list of restaurant
     lateinit var listRestaurant: ArrayList<RestaurantFormatted>
+
+    //user helper
+    private val userHelper = UserHelper()
 
 
     override fun onCreateView(
@@ -103,18 +107,17 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
     }
 
+
     override fun onInfoWindowClick(p0: Marker?) {
-        val indexRestaurant:Int=p0!!.zIndex.toInt()
-        val intentDetails=Intent(requireContext(),DetailsRestaurantActivity::class.java)
-        intentDetails.putExtra("PlaceId",listRestaurant[indexRestaurant].id)
+        val indexRestaurant: Int = p0!!.zIndex.toInt()
+        val intentDetails = Intent(requireContext(), DetailsRestaurantActivity::class.java)
+        intentDetails.putExtra("PlaceId", listRestaurant[indexRestaurant].id)
         startActivity(intentDetails)
     }
-
 
 
     private fun setUpMap() {
@@ -140,8 +143,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 mLastLocation = location
                 val mLatitude = mLastLocation.latitude//set the latitude of location
                 val mLongitude = mLastLocation.longitude//set the longitude of location
-                Log.d("POSITION_DEBUG", mLatitude.toString())
-                Log.d("POSITION_DEBUG", mLongitude.toString())
                 nearbyPlaces(mLatitude, mLongitude)//set the nearby place in terme of user location
                 val currentLatLng = LatLng(mLatitude, mLongitude)////set the position of location
                 mGoogleMap.moveCamera(
@@ -175,37 +176,24 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
                 ) {//is request is success
 
                     if (response!!.isSuccessful) {
-
                         Log.d("REQUEST_DEBUG", response.message())
-                        addMarkerOnMap(response)
-                        sendNearbyPlacesToActivity(listRestaurant!!)//send nearby places data on the main activity
+                        setListRestaurantFormated(response)
+                        sendNearbyPlacesToActivity(listRestaurant)//send nearby places data on the main activity
                     }
                 }
-
-            })
+            }
+            )
 
     }
 
-    private fun addMarkerOnMap(response: Response<NearbyPlaces>) {//TODO SEPARATE METHOD ADD MARKER AND METHOD ADD RESTAURANT IN LIST AND ADD COMMENTS
-        listRestaurant = ArrayList()
-        for (i in 0 until response!!.body()!!.results!!.size) {//boucle for add marker all places
 
-            val listPlaces = response.body()//set the list of places
+    private fun setListRestaurantFormated(response: Response<NearbyPlaces>) {
+        listRestaurant = ArrayList()
+        for (i in 0 until response!!.body()!!.results!!.size) {
             val googlePlace = response.body()!!.results[i]//set the place in term of index
             val lat = googlePlace.geometry!!.location!!.lat//set the latitude of place
             val lng = googlePlace.geometry!!.location!!.lng//set the longitude of place
-            val placeName = googlePlace.name//set the name of place
-            val latLng = LatLng(lat, lng)//set the position of place
-            Log.d("PLACE_DEBUG", placeName)
-            val markerOptions = MarkerOptions()//add marker in the map
-                .position(latLng)
-                .title(placeName)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                .zIndex(i.toFloat())
-
-            mGoogleMap.addMarker(markerOptions)
             val distance = calculDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
-            Log.d("DISTANCE_DEBUG", distance)
             val openHours: Boolean?
             if (googlePlace.opening_hours != null) {
                 openHours = googlePlace.opening_hours.open_now
@@ -218,15 +206,19 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
             if (googlePlace.photos != null) {
                 photoUrl = googlePlace.photos[0].photo_reference
             } else photoUrl = null
+
             val restaurantFormatted = RestaurantFormatted(
                 googlePlace.place_id,
-                placeName,
+                googlePlace.name,
                 googlePlace.vicinity,
                 openHours,
                 rating,
                 photoUrl,
-                distance
+                distance,
+                lat,
+                lng
             )//set restaurant
+            checkUserJoinThisRestaurant(restaurantFormatted, i)
             listRestaurant.add(restaurantFormatted)//add restaurant on list restaurant
 
         }
@@ -281,6 +273,46 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         val intent = Intent("DATA_ACTION")//init broadcast intent
         intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
+    }
+
+    private fun checkUserJoinThisRestaurant(restaurantFormatted: RestaurantFormatted, i: Int) {
+
+        userHelper.getUserByPlaceId(restaurantFormatted.id!!)
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {//if restaurant is joined
+                    val bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)//color green for marker
+                    addMarkerOnMap(restaurantFormatted, i, bitmapDescriptor)
+                } else {//if restaurant is no joined
+                    val bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)//color orange for marker
+                    addMarkerOnMap(restaurantFormatted, i, bitmapDescriptor)
+                }
+                Log.i(
+                    "DEBUG_GET_USER_BY_PLACE",
+                    documents.size().toString() + "  " + restaurantFormatted.name
+                )
+            }
+            .addOnFailureListener { exception ->
+                Log.w("DEBUG", "Error getting documents: ", exception)
+            }
+
+    }
+
+    private fun addMarkerOnMap(restaurantFormatted: RestaurantFormatted, i: Int, bitmapDescriptor: BitmapDescriptor) {
+
+
+        val lat = restaurantFormatted.lat//set the latitude of place
+        val lng = restaurantFormatted.long//set the longitude of place
+        val placeName = restaurantFormatted.name//set the name of place
+        val latLng = LatLng(lat, lng)//set the position of place
+        Log.d("PLACE_DEBUG", placeName!!)
+        val markerOptions = MarkerOptions()//set variables marker
+            .position(latLng)
+            .title(placeName)
+            .icon(bitmapDescriptor)
+            .zIndex(i.toFloat())
+
+        mGoogleMap.addMarker(markerOptions)//add marker in the map
+
     }
 
 

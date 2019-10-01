@@ -58,7 +58,7 @@
             android:id="@+id/imageViewWorkmates"
             app:layout_constraintStart_toStartOf="@+id/guideline"
             android:layout_marginStart="8dp" app:layout_constraintTop_toTopOf="@+id/textViewAddress"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewAddress"/>
+            app:layout_constraintBottom_toBottomOf="@+id/textViewAddress" android:visibility="gone"/>
     <RatingBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/ratingBarRv"
@@ -68,4 +68,10 @@
             android:progressTint="@color/quantum_yellow" android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="@+id/guideline" android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textView_Number_Workmates"
+            app:layout_constraintStart_toEndOf="@+id/imageViewWorkmates" android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/imageViewWorkmates"
+            app:layout_constraintTop_toTopOf="@+id/imageViewWorkmates"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,11 +32,15 @@ import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import fr.thomas.lefebvre.go4lunch.model.database.User
+import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
      lateinit var listRestaurant:ArrayList<RestaurantFormatted>
+    private var userHelper: UserHelper = UserHelper()
+    val user=FirebaseAuth.getInstance().currentUser//get current user
 
 
 
@@ -105,7 +109,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.nav_your_lunch -> {
-                //TODO
+                getUserRestaurantChoiceFirestore()
                 return true
             }
             R.id.nav_settings -> {
@@ -154,11 +158,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navHeaderView = nav_view_drawer.getHeaderView(0)
         val navUserName = navHeaderView.tv_user_name
         val navUserMail = navHeaderView.tv_user_mail
-        val navUserPic = navHeaderView.profile_image
+        val navUserPic = navHeaderView.profile_image_Work_Mates
         val user = FirebaseAuth.getInstance().currentUser
         navUserName.text = user?.displayName
         navUserMail.text = user?.email
-        Picasso.get().load(user?.photoUrl).into(navUserPic)
+        if(user?.photoUrl!=null){
+            Picasso.get().load(user?.photoUrl).into(navUserPic)
+        }
+
 
     }
 
@@ -217,7 +224,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     //Send nearbyPlaces to listFragment
-    private fun sendNearbyPlaces(){
+    private fun sendNearbyPlaces(){//TODO IF GPS NO ACTIVATE
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         val listFragment=ListFragment()
         val bundleListFragment=Bundle()
@@ -228,6 +235,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             fragmentTransaction.commit()
 
 
+    }
+
+    private fun getUserRestaurantChoiceFirestore(){
+        userHelper.getUser(user!!.uid).addOnSuccessListener { documentSnapshot ->
+            val user=documentSnapshot.toObject(User::class.java)
+            if (user!!.restaurantUid!=null){
+                startDetailsActivityChoiceRestaurant(user.restaurantUid)
+
+            }
+            else{
+                Toast.makeText(this,getString(R.string.toast_message_dont_make_choice),Toast.LENGTH_LONG).show()
+            }
+        }
+            .addOnFailureListener {exception ->
+                Log.d("DEBUG_FIRESTORE",exception.toString())
+            }
+    }
+
+    private fun startDetailsActivityChoiceRestaurant(placeId:String?){
+        val intentDetailsActivty=Intent(this,DetailsRestaurantActivity::class.java)
+        intentDetailsActivty.putExtra("PlaceId",placeId)
+        startActivity(intentDetailsActivty)
     }
 
     override fun onResume() {

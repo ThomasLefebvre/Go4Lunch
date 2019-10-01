@@ -19,7 +19,7 @@
         <ImageView
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:srcCompat="@mipmap/ic_launcher_go"
+                app:srcCompat="@drawable/restaurant"
                 android:id="@+id/photoDetailsRestaurant"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:scaleType="centerCrop"
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content" android:id="@+id/textViewNameRestaurantDetail"
                 android:textColor="@color/white"
                 app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"
-                android:text="Le palermo" android:layout_marginBottom="8dp"
+                android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toTopOf="@+id/textViewAdressRestaurantDetail"/>
         <TextView
                 android:textColor="@color/white"
@@ -48,7 +48,6 @@
                 android:layout_marginStart="16dp"
                 android:numStars="3"
                 android:stepSize="0.5"
-                android:rating="2.5"
                 style="@style/Widget.AppCompat.RatingBar.Small"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewNameRestaurantDetail"
                 app:layout_constraintTop_toTopOf="@+id/textViewNameRestaurantDetail"

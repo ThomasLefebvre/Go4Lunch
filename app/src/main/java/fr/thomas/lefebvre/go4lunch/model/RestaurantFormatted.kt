@@ -11,5 +11,7 @@ data class RestaurantFormatted(
     val openNow: Boolean?=null,
     var rating:Double?=null,
     var photoUrl:String?=null,
-    val distance:String?=null
+    val distance:String?=null,
+    val lat:Double,
+    val long:Double
 ):Parcelable

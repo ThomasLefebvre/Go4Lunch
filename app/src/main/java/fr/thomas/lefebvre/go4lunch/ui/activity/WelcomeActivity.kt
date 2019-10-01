@@ -42,12 +42,12 @@ class WelcomeActivity : AppCompatActivity() {
 
     private fun showSignInOptions() {
         startActivityForResult(
-            AuthUI.getInstance().createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .setTheme(R.style.SignTheme)
-                .setIsSmartLockEnabled(false)
-                .setLogo(R.drawable.restaurant)
-                .build(), REQUEST_CODE
+            AuthUI.getInstance().createSignInIntentBuilder()//set the sign in activity with firebaseUI
+                .setAvailableProviders(providers)//set providers
+                .setTheme(R.style.SignTheme)//set theme of activity
+                .setIsSmartLockEnabled(false)//disabled smart lock
+                .setLogo(R.drawable.logo_go_for_lunch)////set logo
+                .build(), REQUEST_CODE//build
         )
 
     }
@@ -89,7 +89,7 @@ class WelcomeActivity : AppCompatActivity() {
         val uidUser=user?.uid//get id current user
         userHelper.getUser(uidUser!!).addOnCompleteListener { doc ->//get the response
             if(!doc.result!!.exists()){//check if user not exist
-                userHelper.createUser(uidUser,name!!,email!!,photoUrl,"","").addOnFailureListener(onFailureListener())//create user in data base if not exist
+                userHelper.createUser(uidUser,name!!,email!!,photoUrl,null,null).addOnFailureListener(onFailureListener())//create user in data base if not exist
             }
         }
     }

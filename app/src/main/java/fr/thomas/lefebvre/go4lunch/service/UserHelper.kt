@@ -5,6 +5,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import fr.thomas.lefebvre.go4lunch.model.database.User
 
 
@@ -21,7 +22,7 @@ class UserHelper {
 
     // --- CREATE ---
 
-    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String, restaurantUid:String): Task<Void> {
+    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String?, restaurantUid:String?): Task<Void> {
         val userToCreate = User(uid, username, email,photoUrl,restaurantName,restaurantUid)
         return getUsersCollection().document(uid).set(userToCreate)
     }
@@ -31,13 +32,26 @@ class UserHelper {
     fun getUser(uid: String): Task<DocumentSnapshot> {
         return getUsersCollection().document(uid).get()
     }
+    fun getAllUser(): Task<QuerySnapshot> {
+        return getUsersCollection().get()
+    }
+    fun getUserByPlaceId(restaurantUid:String): Task<QuerySnapshot> {
+        return getUsersCollection().whereEqualTo("restaurantUid",restaurantUid).get()
+    }
 
     // --- UPDATE ---
+
 
     fun updateUsername(name: String, uid: String): Task<Void> {
         return getUsersCollection().document(uid).update("name", name)
     }
 
+    fun updateUserRestaurantUid(restaurantUid: String, uid: String): Task<Void> {
+        return getUsersCollection().document(uid).update("restaurantUid", restaurantUid)
+    }
+    fun updateUserRestaurantName(restaurantName:String,uid:String):Task<Void>{
+        return getUsersCollection().document(uid).update("restaurantName",restaurantName)
+    }
 
 
     // --- DELETE ---

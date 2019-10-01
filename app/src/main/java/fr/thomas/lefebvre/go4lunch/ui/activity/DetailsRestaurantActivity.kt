@@ -7,13 +7,27 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
+import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.model.details.DetailsPlace
 import fr.thomas.lefebvre.go4lunch.model.details.Photo
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
+import fr.thomas.lefebvre.go4lunch.ui.adapter.NearbyPlacesAdapter
+import fr.thomas.lefebvre.go4lunch.ui.adapter.WorkMatesAdapter
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
+import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
 import kotlinx.android.synthetic.main.activity_details_restaurant.*
+import kotlinx.android.synthetic.main.activity_details_restaurant.view.*
+import kotlinx.android.synthetic.main.fragment_list.*
+import kotlinx.android.synthetic.main.fragment_list.view.*
 import retrofit2.Call
 import retrofit2.Response
 
@@ -23,6 +37,10 @@ class DetailsRestaurantActivity : AppCompatActivity() {
     lateinit var placeId: String
     lateinit var webSiteUrl: String
     lateinit var phoneNumberIntent: String
+    lateinit var listUserChoiceThisRestaurant: ArrayList<User>
+    private val currentUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private val userHelper: UserHelper = UserHelper()
+
 
     //API service
     lateinit var mService: IGoogleAPIService
@@ -36,9 +54,12 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         startWebViewActivity()
         startCallActivity()
         rejoinButtonClick()
+        getUserJoinThisRestaurant()
 
 
     }
+
+
 
 
     private fun initPlace() {
@@ -63,7 +84,6 @@ class DetailsRestaurantActivity : AppCompatActivity() {
                         initDetailsRestaurant(response)
 
 
-
                     }
                 }
 
@@ -74,9 +94,11 @@ class DetailsRestaurantActivity : AppCompatActivity() {
     private fun getUrl(placeId: String): String {
         val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/details/")
         googlePlaceUrl.append("json?place_id=$placeId")//set user position
-        googlePlaceUrl.append("&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=${getString(
+        googlePlaceUrl.append(
+            "&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=${getString(
                 R.string.api_browser_places
-            )}")//set parameters and api key
+            )}"
+        )//set parameters and api key
         Log.d("URL_DEBUG", googlePlaceUrl.toString())
         return googlePlaceUrl.toString()//return the string url
     }
@@ -145,11 +167,77 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         }
     }
 
-    private fun rejoinButtonClick(){//TODO REJOIN BUTTON ACTION
+    private fun rejoinButtonClick() {//set the rejoin button click for choice restaurant
         rejoinActionButton.setOnClickListener {
+            if (currentUser != null) {
 
+                AlertDialog.Builder(this)
+                    .setMessage(R.string.pop_pup_message_choice_restaurant)
+                    .setPositiveButton(
+                        R.string.pop_pup_yes
+                    ) { _, _ ->
+                        userHelper.updateUserRestaurantUid(placeId, currentUser.uid)
+                        val restaurantName = textViewNameRestaurantDetail.text.toString()
+                        userHelper.updateUserRestaurantName(restaurantName, currentUser.uid)
+                        Toast.makeText(this, getString(R.string.toast_message_choice_restaurant), Toast.LENGTH_LONG)
+                            .show()
+                        finish()//TODO UPDATE LIST WITH FIRESTORE DATA AUTOMATICALLY
+                        startActivity(intent)
+
+                    }
+                    .setNegativeButton(R.string.pop_pup_no, null)
+                    .show()
+
+            }
         }
     }
 
+    private fun getUserJoinThisRestaurant() {
+        listUserChoiceThisRestaurant = ArrayList()
+        userHelper.getUserByPlaceId(placeId)
+            .addOnSuccessListener { documents ->
+
+                for (document in documents) {
+                    val user = document.toObject(User::class.java)
+                    addUserOnList(listUserChoiceThisRestaurant, user)
+                }
+                if(listUserChoiceThisRestaurant.size!=0){
+                    setRecyclerView(listUserChoiceThisRestaurant)
+                }
+                else{
+                    Log.i("DEBUG", "No document find with restaurantId" )
+                }
+
+
+            }
+            .addOnFailureListener { exception ->
+                Log.w("DEBUG", "Error getting documents: ", exception)
+            }
+    }
+
+    private fun addUserOnList(listUser: ArrayList<User>, user: User) {
+        listUser.add(user)
+    }
+
+    private fun setRecyclerView(listUser: ArrayList<User>) {
+
+          recyclerView_Workmates_Details.apply {
+              layoutManager=LinearLayoutManager(context)
+              addItemDecoration(DividerItemDecoration(recyclerView_Workmates_Details.context,DividerItemDecoration.VERTICAL))
+              recyclerView_Workmates_Details.adapter = WorkMatesAdapter(context, listUser) { itemClick: User ->
+                  articleClick(itemClick)
+              }
+          }
+
+
+            Log.i("DEBUG_RECYCLER_VIEW","Set recycler view workmates")
+            Log.i("DEBUG_RECYCLER_VIEW",listUser.size.toString())
+
+
+
+    }
+
+    private fun articleClick(itemClick: User) {
+    }
 
 }
