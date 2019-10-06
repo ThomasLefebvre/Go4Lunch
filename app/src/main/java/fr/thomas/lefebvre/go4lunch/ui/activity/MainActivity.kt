@@ -1,11 +1,11 @@
 package fr.thomas.lefebvre.go4lunch.ui.activity
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.app.Activity
+import android.content.*
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.core.view.GravityCompat
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -15,6 +15,7 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
+import android.webkit.WebViewFragment
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.firebase.ui.auth.AuthUI
@@ -38,10 +39,10 @@ import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-     lateinit var listRestaurant:ArrayList<RestaurantFormatted>
-    private var userHelper: UserHelper = UserHelper()
-    val user=FirebaseAuth.getInstance().currentUser//get current user
 
+    lateinit var mListRestaurant: ArrayList<RestaurantFormatted>
+    private var userHelper: UserHelper = UserHelper()
+    val user = FirebaseAuth.getInstance().currentUser//get current user
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,10 +72,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         getUserInformation()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
-
-
     }
-
 
 
     override fun onBackPressed() {
@@ -113,7 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.nav_settings -> {
-                val intentSettingsActivity=Intent(this,SettingsActivity::class.java)
+                val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
                 startActivity(intentSettingsActivity)
                 return true
             }
@@ -162,7 +160,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val user = FirebaseAuth.getInstance().currentUser
         navUserName.text = user?.displayName
         navUserMail.text = user?.email
-        if(user?.photoUrl!=null){
+        if (user?.photoUrl != null) {
             Picasso.get().load(user?.photoUrl).into(navUserPic)
         }
 
@@ -191,12 +189,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_list -> {//TODO IF LOCATION IS DISABLED
-                if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)//check the location permission
+                if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED && isLocationEnabled(this)
+                )//check the location permission
                 {
                     sendNearbyPlaces()//if permission is ok send nearby place
-                }
-                else
-                {
+                } else {
                     replaceFragment(ListFragment())//if permission is denied list fragment is empty
                 }
                 return@OnNavigationItemSelectedListener true
@@ -212,11 +212,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     //Get nearbyPlaces from mapsFragment
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if ("DATA_ACTION" == intent.action)
-            {
-                if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                {
-                    listRestaurant=intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
+            if ("DATA_ACTION" == intent.action) {
+                if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    mListRestaurant = intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
                 }
 
             }
@@ -224,40 +226,44 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     //Send nearbyPlaces to listFragment
-    private fun sendNearbyPlaces(){//TODO IF GPS NO ACTIVATE
+    private fun sendNearbyPlaces() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        val listFragment=ListFragment()
-        val bundleListFragment=Bundle()
-
-            bundleListFragment.putParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS",listRestaurant)
-            listFragment.arguments=bundleListFragment
-            fragmentTransaction.replace(R.id.fragment_container, listFragment)
-            fragmentTransaction.commit()
-
-
+        val listFragment = ListFragment()
+        val bundleListFragment = Bundle()
+        bundleListFragment.putParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS", mListRestaurant)
+        listFragment.arguments = bundleListFragment
+        fragmentTransaction.replace(R.id.fragment_container, listFragment)
+        fragmentTransaction.commit()
     }
 
-    private fun getUserRestaurantChoiceFirestore(){
+    private fun getUserRestaurantChoiceFirestore() {
         userHelper.getUser(user!!.uid).addOnSuccessListener { documentSnapshot ->
-            val user=documentSnapshot.toObject(User::class.java)
-            if (user!!.restaurantUid!=null){
+            val user = documentSnapshot.toObject(User::class.java)
+            if (user!!.restaurantUid != null) {
                 startDetailsActivityChoiceRestaurant(user.restaurantUid)
 
-            }
-            else{
-                Toast.makeText(this,getString(R.string.toast_message_dont_make_choice),Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, getString(R.string.toast_message_dont_make_choice), Toast.LENGTH_LONG).show()
             }
         }
-            .addOnFailureListener {exception ->
-                Log.d("DEBUG_FIRESTORE",exception.toString())
+            .addOnFailureListener { exception ->
+                Log.d("DEBUG_FIRESTORE", exception.toString())
             }
     }
 
-    private fun startDetailsActivityChoiceRestaurant(placeId:String?){
-        val intentDetailsActivty=Intent(this,DetailsRestaurantActivity::class.java)
-        intentDetailsActivty.putExtra("PlaceId",placeId)
+    private fun startDetailsActivityChoiceRestaurant(placeId: String?) {
+        val intentDetailsActivty = Intent(this, DetailsRestaurantActivity::class.java)
+        intentDetailsActivty.putExtra("PlaceId", placeId)
         startActivity(intentDetailsActivty)
     }
+
+    private fun isLocationEnabled(mContext: Context): Boolean {
+        val lm = mContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -273,4 +279,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
     }
+
+
 }

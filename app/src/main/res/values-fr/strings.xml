@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4Lunch</string>
+
+    <string name="facebook_application_id" translatable="false">432725947334830</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb432725947334830</string>
+    <string name="api_maps_key">AIzaSyAFahzqrhTG1gi_SgbjmBE6hbezryPxeoo</string>
+    <string name="api_browser_places">AIzaSyCYCJ0NjpFaTmCMqRQRn2i20vzlYyd5kOc</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="menu_your_lunch">Votre repas</string>
+    <string name="menu_setting">Options</string>
+    <string name="menu_log_out">Deconnexion</string>
+    <string name="menu_search">Recherche</string>
+    <string name="menu_map_view">Carte</string>
+    <string name="menu_list_view">Liste</string>
+    <string name="menu_workmates">Collègues</string>
+    <string name="twitter_consumer_key" translatable="false">bSUt73cabbyd9ijD69Xd542G7</string>
+    <string name="twitter_consumer_secret" translatable="false">S1OyJ0LrDf0z6DLiqQ4LtMbrMaOoMrIUhfLN2euAMytBrT4CCE
+    </string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pop_pup_message_log_out">Voulez vous vraiment vous deconnecter?</string>
+    <string name="pop_pup_message_delete_account">Voulez vous vraiment supprimer votre compte?</string>
+    <string name="pop_pup_yes">Oui</string>
+    <string name="pop_pup_no">Non</string>
+    <string name="pop_pup_message_choice_restaurant">Voulez vous choisir ce restaurant?</string>
+    <string name="toast_message_choice_restaurant">Super! Bonne appétit!</string>
+    <string name="message_permission_location">Cette permission est nécessaire pour localiser les restaurants.</string>
+    <string name="message_activate">Activer</string>
+    <string name="your_position">Votre position</string>
+    <string name="message_list_location">Activez votre service de localisation pour afficher la liste des restaurants à proximité.</string>
+    <string name="toast_message_dont_make_choice">Veuillez choisir un restaurant pour votre déjeuner…</string>
+    <string name="message_list_no_result">Aucun résultat à proximité de votre position.</string>
+    <string name="title_tool_bar_hungry">J\'ai faim!</string>
+    <string name="title_tool_bar_workmate">Collègues</string>
+    <string name="title_tool_bar_settings">Options</string>
+    <string name="enable_notifications">Activer les notifications:</string>
+    <string name="delete_account">Supprimer votre compte:</string>
+    <string name="title_activity_details_restaurant">DetailsRestaurantActivity</string>
+    <string name="action_settings">Options</string>
+    <string name="open">Ouvert</string>
+    <string name="closed">Fermé</string>
+    <string name="call">APPEL</string>
+    <string name="like">LIKE</string>
+    <string name="website">WEBSITE</string>
+    <string name="error">error</string>
+    <string name="is_eating_at">mange à</string>
+    <string name="not_decided">n\'est pas encore décidé(e)</string>
+
+</resources>
