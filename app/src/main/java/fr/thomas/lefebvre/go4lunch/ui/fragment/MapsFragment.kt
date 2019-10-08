@@ -1,10 +1,7 @@
 package fr.thomas.lefebvre.go4lunch.ui.fragment
 
 
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.IntentSender
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,20 +10,14 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
-import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
@@ -59,6 +50,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //location
     private lateinit var mLastLocation: Location
+    private  var mLasttLat: Double=0.0
+    private  var mLasttLng: Double=0.0
 
 
     //service user
@@ -124,6 +117,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
 
 
+
+
+
     override fun onMarkerClick(p0: Marker?): Boolean {
         return false
     }
@@ -163,10 +159,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
             if (location != null) //if the last location isn't null
             {
                 mLastLocation = location
-                val mLatitude = mLastLocation.latitude//set the latitude of location
-                val mLongitude = mLastLocation.longitude//set the longitude of location
-                nearbyPlaces(mLatitude, mLongitude)//set the nearby place in terme of user location
-                val currentLatLng = LatLng(mLatitude, mLongitude)////set the position of location
+               this.mLasttLat = mLastLocation.latitude//set the latitude of location
+                this.mLasttLng = mLastLocation.longitude//set the longitude of location
+                nearbyPlaces(mLasttLat, mLasttLng)//set the nearby place in terme of user location
+                val currentLatLng = LatLng(mLasttLat, mLasttLng)////set the position of location
                 mGoogleMap.moveCamera(
                     CameraUpdateFactory.newLatLngZoom(
                         currentLatLng,
@@ -294,6 +290,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
      fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
         val intent = Intent("DATA_ACTION")//init broadcast intent
         intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
+         intent.putExtra("CURRENT_LAT",mLasttLat)
+         intent.putExtra("CURRENT_LNG",mLasttLng)
         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 

@@ -21,6 +21,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="pop_pup_message_log_out">Are you sure to want logout?</string>
     <string name="pop_pup_message_delete_account">Are you sure to want delete your account?</string>
+    <string name="pop_pup_message_leave">Are you sure to want leave?</string>
     <string name="pop_pup_yes">Yes</string>
     <string name="pop_pup_no">No</string>
     <string name="pop_pup_message_choice_restaurant">Do you want choice this restaurant for your lunch?</string>

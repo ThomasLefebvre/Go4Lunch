@@ -10,8 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 import fr.thomas.lefebvre.go4lunch.R
+import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.adapter.WorkMatesAdapter
@@ -20,6 +25,8 @@ import kotlinx.android.synthetic.main.activity_details_restaurant.*
 import kotlinx.android.synthetic.main.activity_details_restaurant.recyclerView_Workmates_Details
 import kotlinx.android.synthetic.main.activity_details_restaurant.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.fragment_list.*
+import kotlinx.android.synthetic.main.fragment_list.view.*
 import kotlinx.android.synthetic.main.fragment_workmates.*
 import kotlinx.android.synthetic.main.fragment_workmates.view.*
 
@@ -33,8 +40,7 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class WorkmatesFragment : Fragment() {
-    lateinit var listAllUser: ArrayList<User>
-    private val userHelper = UserHelper()
+    lateinit var adapter: WorkMatesAdapter
 
 
     override fun onCreateView(
@@ -45,69 +51,58 @@ class WorkmatesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_workmates, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        activity!!.toolbar.title = getString(R.string.title_tool_bar_workmate)
-        getAllUser()
-    }
+
+    private fun getUserWithFireStore() {
+        val query = FirebaseFirestore.getInstance()
+            .collection("users")
+            .orderBy("name")
 
 
-    private fun getAllUser() {
-        listAllUser = ArrayList()
-        userHelper.getAllUser()
-            .addOnSuccessListener { documents ->
+        val options = FirestoreRecyclerOptions.Builder<User>()
+            .setQuery(query, User::class.java)
+            .build()
 
-                for (document in documents) {
-                    val user = document.toObject(User::class.java)
-                    addUserOnList(listAllUser, user)
-                }
-                if (listAllUser.size != 0) {
-                    setRecyclerView(listAllUser)
-                    Log.i(
-                        "DEBUG",
-                        "0:" + listAllUser[0].restaurantUid + "0:" + listAllUser[1].restaurantUid + "0:" + listAllUser[2].restaurantUid
-                    )
-                }
-
-
-            }
-            .addOnFailureListener { exception ->
-                Log.w("DEBUG", "Error getting documents: ", exception)
-            }
-    }
-
-    private fun addUserOnList(listUser: ArrayList<User>, user: User) {
-        listUser.add(user)
-    }
-
-    private fun setRecyclerView(listUser: ArrayList<User>) {
-        recycler_view_all_user.apply {
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(
-                DividerItemDecoration(
-                    recycler_view_all_user.context,
-                    DividerItemDecoration.VERTICAL
-                )
-            )
-            recycler_view_all_user.adapter = WorkMatesAdapter( context, listUser) { itemClick: User ->
-                articleClick(itemClick)
-            }
+        adapter = WorkMatesAdapter(options){ itemClick: User ->
+            articleClick(itemClick)
         }
 
-
-        Log.i("DEBUG_RECYCLER_VIEW", "Set recycler view workmates")
-        Log.i("DEBUG_RECYCLER_VIEW", listUser.size.toString())
+        recycler_view_all_user.setHasFixedSize(false)
+        recycler_view_all_user.layoutManager = LinearLayoutManager(requireContext())
+        recycler_view_all_user.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        recycler_view_all_user.adapter = adapter
 
 
     }
 
-    private fun articleClick(itemClick: User) {
-        if (itemClick.restaurantUid != null) {
+    private fun articleClick(itemClick: User) {//start details activity if click on article
+        if(itemClick.restaurantUid!=null){
             val intentDetails = Intent(requireContext(), DetailsRestaurantActivity::class.java)
             intentDetails.putExtra("PlaceId", itemClick.restaurantUid)
             startActivity(intentDetails)
         }
+
     }
 
-    //TODO UPDATE LIST WITH FIRESTORE DATA AUTOMATICALLY
+    override fun onStart() {
+        super.onStart()
+        adapter.startListening()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        adapter.stopListening()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity!!.toolbar.title = getString(R.string.title_tool_bar_workmate)
+        getUserWithFireStore()
+    }
+
 }
+
+
+
+
+
+

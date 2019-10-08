@@ -3,6 +3,7 @@ package fr.thomas.lefebvre.go4lunch.ui.activity
 import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
@@ -31,10 +32,21 @@ import kotlinx.android.synthetic.main.nav_header_main.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.facebook.places.model.PlaceFields
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.type.LatLng
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -43,6 +55,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var mListRestaurant: ArrayList<RestaurantFormatted>
     private var userHelper: UserHelper = UserHelper()
     val user = FirebaseAuth.getInstance().currentUser//get current user
+
+    //current position
+    var mCurrentLat:Double=0.0
+    var mCurrentLng:Double=0.0
+
+
+
+
+    //request check setting code
+    companion object {
+        private const val AUTOCOMPLETE_REQUEST = 2
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +88,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         changeIconMenuDrawer()
         replaceFragment(MapsFragment())
 
-
+        // Initialize Places.
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, getString(R.string.api_maps_key), Locale.US);
+        }
 
         navView.setNavigationItemSelectedListener(this)
 
@@ -80,9 +107,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            alertDialogForCloseApp()
         }
     }
+
 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -97,7 +125,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.menu_search -> {
-
+                initAutoCompleteIntent()// init the autocomplete intent in the click button search
             }
         }
         return super.onOptionsItemSelected(item)
@@ -126,18 +154,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun alertDialogLogOut() {
-        AlertDialog.Builder(this)
-            .setMessage(R.string.pop_pup_message_log_out)
-            .setPositiveButton(
-                R.string.pop_pup_yes
-            ) { _, _ ->
-                logOutUser()
-                finish()
-            }
-            .setNegativeButton(R.string.pop_pup_no, null)
-            .show()
-    }
+
+
 
     fun changeIconMenuDrawer() {
         supportActionBar?.setHomeButtonEnabled(true)
@@ -188,7 +206,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 replaceFragment(MapsFragment())
                 return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_list -> {//TODO IF LOCATION IS DISABLED
+            R.id.navigation_list -> {
                 if (ActivityCompat.checkSelfPermission(
                         this@MainActivity,
                         android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -209,7 +227,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         false
     }
 
-    //Get nearbyPlaces from mapsFragment
+    //Get nearbyPlaces and current location from mapsFragment
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if ("DATA_ACTION" == intent.action) {
@@ -219,6 +237,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     mListRestaurant = intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
+                    mCurrentLat=intent.getDoubleExtra("CURRENT_LAT",0.0)
+                    mCurrentLng=intent.getDoubleExtra("CURRENT_LNG",0.0)
+
+                    Log.d("DEBUG_LOCATION_LATLNG",mCurrentLat.toString()+"   "+mCurrentLng.toString())
                 }
 
             }
@@ -263,6 +285,72 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             LocationManager.NETWORK_PROVIDER
         )
     }
+/* ------------------------------
+                                            MENU SEARCH WITH AUTOCOMPLETE SDK
+                                                                                  ------------------------------------  */
+
+    private fun initAutoCompleteIntent() {
+
+        val fields = Arrays.asList(Place.Field.ID, Place.Field.NAME)//init the fields return from autocomplete
+        val intentAutocomplete = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+            .setLocationRestriction(RectangularBounds.newInstance(
+                 com.google.android.gms.maps.model.LatLng(mCurrentLat-0.05, mCurrentLng-0.05),
+                 com.google.android.gms.maps.model.LatLng(mCurrentLat+0.05, mCurrentLng+0.05)))
+            .build(this)
+        startActivityForResult(intentAutocomplete, AUTOCOMPLETE_REQUEST)
+    }
+
+
+
+/* ------------------------------
+                                            MANAGE RESULT OF REQUESTS
+                                                                                  ------------------------------------  */
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == AUTOCOMPLETE_REQUEST) {//result of autocomplete request
+            when (resultCode) {
+                RESULT_OK -> {// if result is ok
+                    val place = Autocomplete.getPlaceFromIntent(data!!)
+                    startDetailsActivityChoiceRestaurant(place.id)
+                }
+                AutocompleteActivity.RESULT_ERROR -> {//if error in request
+                    val status = Autocomplete.getStatusFromIntent(data!!);
+                    Log.i("DEBUG_AUTOCOMPLETE", status.statusMessage!!);
+                }
+                RESULT_CANCELED -> {
+                    // The user canceled the operation.
+                }
+            }
+        }
+    }
+
+    /* ------------------------------
+                                               ALERT DIALOGS
+                                                                                      ------------------------------------  */
+    private fun alertDialogLogOut() {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.pop_pup_message_log_out)
+            .setPositiveButton(
+                R.string.pop_pup_yes
+            ) { _, _ ->
+                logOutUser()
+                finish()
+            }
+            .setNegativeButton(R.string.pop_pup_no, null)
+            .show()
+    }
+
+    private fun alertDialogForCloseApp(){
+        AlertDialog.Builder(this)
+            .setMessage(R.string.pop_pup_message_leave)
+            .setPositiveButton(R.string.pop_pup_yes){dialogInterface, i ->
+                super.onBackPressed()
+            }
+            .setNegativeButton(R.string.pop_pup_no,null)
+            .show()
+    }
+
 
 
     override fun onResume() {
