@@ -10,6 +10,9 @@ data class User(
     val email:String="",
     val photoUrl:String="",
     var restaurantName: String? ="",
-    var restaurantUid:String?=""
+    var restaurantAdress:String?="",
+    var restaurantUid:String?="",
+    var notificationIsActived: Boolean =true
+
 )
 

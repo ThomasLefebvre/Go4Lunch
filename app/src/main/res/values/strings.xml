@@ -50,4 +50,11 @@
     <string name="not_decided">has not decided yet</string>
 
 
+    <string name="default_notification_channel_id">fr.thomas.lefebvre.go4lunch.service.notifications</string>
+    <string name="notification_title">Your restaurant!</string>
+    <string name="chanel_name">chanel your restaurant</string>
+    <string name="message_notif">Your lunch at</string>
+    <string name="message_notif_with">with</string>
+
+
 </resources>

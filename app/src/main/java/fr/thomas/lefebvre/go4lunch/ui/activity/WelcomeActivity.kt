@@ -89,7 +89,7 @@ class WelcomeActivity : AppCompatActivity() {
         val uidUser=user?.uid//get id current user
         userHelper.getUser(uidUser!!).addOnCompleteListener { doc ->//get the response
             if(!doc.result!!.exists()){//check if user not exist
-                userHelper.createUser(uidUser,name!!,email!!,photoUrl,null,null).addOnFailureListener(onFailureListener())//create user in data base if not exist
+                userHelper.createUser(uidUser,name!!,email!!,photoUrl,null,null,null,true).addOnFailureListener(onFailureListener())//create user in data base if not exist
             }
         }
     }

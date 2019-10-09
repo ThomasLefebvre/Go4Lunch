@@ -4,18 +4,22 @@ package fr.thomas.lefebvre.go4lunch.ui.activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
+import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
 import kotlinx.android.synthetic.main.activity_settings.*
 
 class SettingsActivity : AppCompatActivity() {
 
-    val user = FirebaseAuth.getInstance().currentUser//get current user
+    val currentUser = FirebaseAuth.getInstance().currentUser//get current user
+    private val userHelper: UserHelper = UserHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,20 +29,21 @@ class SettingsActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         getCurrentUser()
         clickDeleteButton()
+        switchListener()
     }
 
     private fun getCurrentUser() {
-        textView_Settings_Name.text = user?.displayName//set the user name
-        textView_Settings_Mail.text = user?.email//set the user mail
-        if(user?.photoUrl!=null){
-            Picasso.get().load(user?.photoUrl).into(circleImageView_Setting)//set the user picture
+        textView_Settings_Name.text = currentUser?.displayName//set the user name
+        textView_Settings_Mail.text = currentUser?.email//set the user mail
+        if(currentUser?.photoUrl!=null){
+            Picasso.get().load(currentUser?.photoUrl).into(circleImageView_Setting)//set the user picture
         }
 
     }
 
 
     private fun deleteAccount() {//TODO DELETE USER ON DATABASE
-        if (user != null) {
+        if (currentUser != null) {
             AuthUI.getInstance().delete(this)
                 .addOnCompleteListener {
                     val welcomeActivityIntent = Intent(this, WelcomeActivity::class.java)
@@ -72,4 +77,17 @@ class SettingsActivity : AppCompatActivity() {
         alertDialogDeleteAccount()
     }
     }
+
+    private fun switchListener(){
+        switch_notifications.setOnClickListener(View.OnClickListener{
+            if(switch_notifications.isChecked){
+                userHelper.updateUserNotificationState(true,currentUser!!.uid)
+            }
+            else{
+                userHelper.updateUserNotificationState(false,currentUser!!.uid)
+            }
+        })
+    }
+
+    //TODO SHARED PREF FOR SWITCH SAVE
 }

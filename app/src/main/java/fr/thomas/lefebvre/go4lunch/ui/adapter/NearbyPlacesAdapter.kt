@@ -93,7 +93,7 @@ class NearbyPlacesAdapter(
                     tvOpenHours.text=""
                 }
                 //set the numbers of workmates
-                var listUserChoiceThisRestaurant = ArrayList<User>()
+                val listUserChoiceThisRestaurant = ArrayList<User>()
                 userHelper.getUserByPlaceId(restaurant.id!!)
                     .addOnSuccessListener { documents ->
 

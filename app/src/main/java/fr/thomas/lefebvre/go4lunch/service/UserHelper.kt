@@ -22,8 +22,8 @@ class UserHelper {
 
     // --- CREATE ---
 
-    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String?, restaurantUid:String?): Task<Void> {
-        val userToCreate = User(uid, username, email,photoUrl,restaurantName,restaurantUid)
+    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String?,restaurantAdress:String?, restaurantUid:String?,notificationIsActived: Boolean): Task<Void> {
+        val userToCreate = User(uid, username, email,photoUrl,restaurantName,restaurantAdress,restaurantUid,notificationIsActived)
         return getUsersCollection().document(uid).set(userToCreate)
     }
 
@@ -39,6 +39,7 @@ class UserHelper {
         return getUsersCollection().whereEqualTo("restaurantUid",restaurantUid).get()
     }
 
+
     // --- UPDATE ---
 
 
@@ -51,6 +52,14 @@ class UserHelper {
     }
     fun updateUserRestaurantName(restaurantName:String,uid:String):Task<Void>{
         return getUsersCollection().document(uid).update("restaurantName",restaurantName)
+    }
+
+    fun updateUserAdress(restaurantAdress:String,uid:String):Task<Void>{
+        return getUsersCollection().document(uid).update("restaurantAdress",restaurantAdress)
+    }
+
+    fun updateUserNotificationState(notificationIsActived: Boolean,uid:String):Task<Void>{
+        return getUsersCollection().document(uid).update("notificationIsActived",notificationIsActived)
     }
 
 

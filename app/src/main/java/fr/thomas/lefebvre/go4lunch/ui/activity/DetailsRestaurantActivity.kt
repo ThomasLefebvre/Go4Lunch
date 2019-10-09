@@ -174,6 +174,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
                         userHelper.updateUserRestaurantUid(placeId, currentUser.uid)
                         val restaurantName = textViewNameRestaurantDetail.text.toString()
                         userHelper.updateUserRestaurantName(restaurantName, currentUser.uid)
+                        userHelper.updateUserAdress(textViewAdressRestaurantDetail.text.toString() ,currentUser.uid)
                         Toast.makeText(this, getString(R.string.toast_message_choice_restaurant), Toast.LENGTH_LONG)
                             .show()
 

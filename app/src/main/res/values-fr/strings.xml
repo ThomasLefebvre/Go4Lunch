@@ -49,4 +49,13 @@
     <string name="is_eating_at">mange à</string>
     <string name="not_decided">n\'est pas encore décidé(e)</string>
 
+
+    <string name="default_notification_channel_id">fr.thomas.lefebvre.go4lunch.service.notifications</string>
+    <string name="notification_title">Votre restaurant!</string>
+    <string name="chanel_name">chanel your restaurant</string>
+
+    <string name="message_notif">Vous mangez à</string>
+    <string name="message_notif_with">avec</string>
+
+
 </resources>

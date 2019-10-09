@@ -74,7 +74,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/textView_Activate_Notifications"
             android:textColorHint="@color/white"
             app:layout_constraintStart_toEndOf="@+id/textView_Activate_Notifications"
-            android:layout_marginStart="32dp" android:padding="8dp"/>
+            android:layout_marginStart="32dp" android:padding="8dp" android:checked="true"/>
     <TextView
             android:text="@string/delete_account"
             android:layout_width="wrap_content"
