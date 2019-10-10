@@ -38,6 +38,8 @@ class NotificationsService : FirebaseMessagingService() {
     var messageNotif:String=""
 
 
+
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         if(remoteMessage.notification!=null){
            checkNotificationIsActived()
