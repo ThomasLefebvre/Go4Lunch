@@ -1,12 +1,10 @@
 package fr.thomas.lefebvre.go4lunch.ui.activity
 
-import android.app.Activity
+
 import android.content.*
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import androidx.core.view.GravityCompat
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -16,7 +14,6 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
-import android.webkit.WebViewFragment
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.firebase.ui.auth.AuthUI
@@ -32,7 +29,6 @@ import kotlinx.android.synthetic.main.nav_header_main.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.facebook.places.model.PlaceFields
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
@@ -40,7 +36,6 @@ import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
-import com.google.type.LatLng
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.database.User
@@ -296,6 +291,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .setLocationRestriction(RectangularBounds.newInstance(
                  com.google.android.gms.maps.model.LatLng(mCurrentLat-0.05, mCurrentLng-0.05),
                  com.google.android.gms.maps.model.LatLng(mCurrentLat+0.05, mCurrentLng+0.05)))
+            .setTypeFilter(TypeFilter.ESTABLISHMENT)
             .build(this)
         startActivityForResult(intentAutocomplete, AUTOCOMPLETE_REQUEST)
     }

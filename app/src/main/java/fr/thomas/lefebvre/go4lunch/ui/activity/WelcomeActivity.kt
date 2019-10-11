@@ -34,8 +34,9 @@ class WelcomeActivity : AppCompatActivity() {
         if (!checkCurrentUserIsConnected()) {
             showSignInOptions()
         } else {
+
+            startSplashActivity()
             finish()
-            startMainActivity()
         }
 
     }
@@ -52,8 +53,8 @@ class WelcomeActivity : AppCompatActivity() {
 
     }
 
-    private fun startMainActivity() {
-        val intentMainActivity = Intent(this, MainActivity::class.java)
+    private fun startSplashActivity() {
+        val intentMainActivity = Intent(this, SplashScreen::class.java)
         startActivity(intentMainActivity)
     }
 
@@ -71,9 +72,8 @@ class WelcomeActivity : AppCompatActivity() {
                 val user = FirebaseAuth.getInstance().currentUser//get current user
                 Toast.makeText(this, " ${user?.displayName} is connected", Toast.LENGTH_LONG).show()
                 createUserOnFirestoreDataBase()
-                val intentMainActivity = Intent(this, MainActivity::class.java)
+                startSplashActivity()
                 finish()
-                startActivity(intentMainActivity)
 
             } else {
                 finish()

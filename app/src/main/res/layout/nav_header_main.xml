@@ -2,13 +2,22 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="@dimen/nav_header_height"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
         android:orientation="vertical"
         android:gravity="bottom"
         android:background="@drawable/lunch_head"
 >
+    <TextView
+            android:text="@string/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textView_App_Name" android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/profile_image_Work_Mates"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:layout_marginStart="8dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"/>
     <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/profile_image_Work_Mates"
