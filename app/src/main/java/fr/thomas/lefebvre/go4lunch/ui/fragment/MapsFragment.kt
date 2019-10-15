@@ -23,6 +23,7 @@ import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.utils.ConverterHelper
 import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -50,8 +51,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //location
     private lateinit var mLastLocation: Location
-    private  var mLasttLat: Double=0.0
-    private  var mLasttLng: Double=0.0
+    private var mLasttLat: Double = 0.0
+    private var mLasttLng: Double = 0.0
 
 
     //service user
@@ -71,6 +72,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     //user helper
     private val userHelper = UserHelper()
+
+    //util converter class
+    private val converterHelper=ConverterHelper()
 
 
     override fun onCreateView(
@@ -103,7 +107,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-
     override fun onMapReady(googleMap: GoogleMap) {
         MapsInitializer.initialize(context)
         mGoogleMap = googleMap
@@ -113,11 +116,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
 
     }
-
-
-
-
-
 
 
     override fun onMarkerClick(p0: Marker?): Boolean {
@@ -133,10 +131,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-
-
-
-     fun setUpMap() {
+    fun setUpMap() {
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -153,13 +148,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         mGoogleMap.uiSettings.isZoomControlsEnabled = true//active the button zoom
 
 
-
         fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity())//get the last location of user
         { location ->
             if (location != null) //if the last location isn't null
             {
                 mLastLocation = location
-               this.mLasttLat = mLastLocation.latitude//set the latitude of location
+                this.mLasttLat = mLastLocation.latitude//set the latitude of location
                 this.mLasttLng = mLastLocation.longitude//set the longitude of location
                 nearbyPlaces(mLasttLat, mLasttLng)//set the nearby place in terme of user location
                 val currentLatLng = LatLng(mLasttLat, mLasttLng)////set the position of location
@@ -176,7 +170,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-     fun nearbyPlaces(latitude: Double, longitude: Double) {
+    fun nearbyPlaces(latitude: Double, longitude: Double) {
 
         //build url request base on location
         val url = getUrl(latitude, longitude)
@@ -205,13 +199,13 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-     fun setListRestaurantFormated(response: Response<NearbyPlaces>) {
+    fun setListRestaurantFormated(response: Response<NearbyPlaces>) {
         listRestaurant = ArrayList()
         for (i in 0 until response!!.body()!!.results!!.size) {
             val googlePlace = response.body()!!.results[i]//set the place in term of index
             val lat = googlePlace.geometry!!.location!!.lat//set the latitude of place
             val lng = googlePlace.geometry!!.location!!.lng//set the longitude of place
-            val distance = calculDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
+            val distance = converterHelper.computeDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
             val openHours: Boolean?
             if (googlePlace.opening_hours != null) {
                 openHours = googlePlace.opening_hours.open_now
@@ -242,20 +236,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         }
     }
 
-     fun calculDistance(currentLat: Double, currentLng: Double, placeLat: Double, placeLng: Double): String {
-        // Set array of distance
-        val distanceArray = floatArrayOf(0f)
-        //calcul distance between current location and places location
-        Location.distanceBetween(
-            currentLat, currentLng,//current lat and lng
-            placeLat, placeLng,//place lat and lng
-            distanceArray
-        )//array for the result
-        val distance: String = distanceArray[0].toInt().toString()//add the distance in the model
-        return distance
-    }
+//    fun calculDistance(currentLat: Double, currentLng: Double, placeLat: Double, placeLng: Double): String {
+//        // Set array of distance
+//        val distanceArray = floatArrayOf(0f)
+//        //calcul distance between current location and places location
+//        Location.distanceBetween(
+//            currentLat, currentLng,//current lat and lng
+//            placeLat, placeLng,//place lat and lng
+//            distanceArray
+//        )//array for the result
+//        val distance: String = distanceArray[0].toInt().toString()//add the distance in the model
+//        return distance
+//    }
 
-     fun getUrl(latitude: Double, longitude: Double): String {
+    fun getUrl(latitude: Double, longitude: Double): String {
         val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json")
         googlePlaceUrl.append("?location=$latitude,$longitude")//set user position
         googlePlaceUrl.append("&rankby=distance")//=1km
@@ -287,23 +281,25 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     }
 
 
-     fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
+    fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
         val intent = Intent("DATA_ACTION")//init broadcast intent
         intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
-         intent.putExtra("CURRENT_LAT",mLasttLat)
-         intent.putExtra("CURRENT_LNG",mLasttLng)
+        intent.putExtra("CURRENT_LAT", mLasttLat)
+        intent.putExtra("CURRENT_LNG", mLasttLng)
         LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 
-     fun checkUserJoinThisRestaurant(restaurantFormatted: RestaurantFormatted, i: Int) {
+    fun checkUserJoinThisRestaurant(restaurantFormatted: RestaurantFormatted, i: Int) {
 
         userHelper.getUserByPlaceId(restaurantFormatted.id!!)
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {//if restaurant is joined
-                    val bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)//color green for marker
+                    val bitmapDescriptor =
+                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)//color green for marker
                     addMarkerOnMap(restaurantFormatted, i, bitmapDescriptor)
                 } else {//if restaurant is no joined
-                    val bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)//color orange for marker
+                    val bitmapDescriptor =
+                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)//color orange for marker
                     addMarkerOnMap(restaurantFormatted, i, bitmapDescriptor)
                 }
                 Log.i(
@@ -317,7 +313,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     }
 
-     fun addMarkerOnMap(restaurantFormatted: RestaurantFormatted, i: Int, bitmapDescriptor: BitmapDescriptor) {
+    fun addMarkerOnMap(restaurantFormatted: RestaurantFormatted, i: Int, bitmapDescriptor: BitmapDescriptor) {
         val lat = restaurantFormatted.lat//set the latitude of place
         val lng = restaurantFormatted.long//set the longitude of place
         val placeName = restaurantFormatted.name//set the name of place
@@ -332,8 +328,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
         mGoogleMap.addMarker(markerOptions)//add marker in the map
 
     }
-
-
 
 
 }

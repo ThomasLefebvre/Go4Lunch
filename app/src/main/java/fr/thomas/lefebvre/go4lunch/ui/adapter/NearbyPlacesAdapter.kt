@@ -116,7 +116,7 @@ class NearbyPlacesAdapter(
                     }
 
                 //set distance
-                val distance = StringBuilder(restaurant.distance + "m")
+                val distance = StringBuilder(restaurant.distance!!)
                 tvDistance.text = distance.toString()
 
                 itemView.setOnClickListener {

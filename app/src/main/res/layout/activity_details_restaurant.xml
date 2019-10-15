@@ -32,15 +32,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/textViewNameRestaurantDetail"
                 android:textColor="@color/white"
-                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"
+                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"
                 android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toTopOf="@+id/textViewAdressRestaurantDetail"/>
+                app:layout_constraintBottom_toTopOf="@+id/textViewAdressRestaurantDetail" android:textSize="12sp"/>
         <TextView
                 android:textColor="@color/white"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content" android:id="@+id/textViewAdressRestaurantDetail"
                 android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"/>
+                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp" android:textSize="12sp"
+                android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"/>
         <RatingBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/ratingBar"
@@ -62,6 +63,14 @@
                 android:layout_marginEnd="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:backgroundTint="@color/green"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView_OpenningHours" app:layout_constraintStart_toEndOf="@+id/ratingBar"
+                android:layout_marginStart="8dp"
+                app:layout_constraintTop_toTopOf="@+id/ratingBar"
+                app:layout_constraintBottom_toBottomOf="@+id/ratingBar" android:textColor="@color/white"
+                android:textSize="10sp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="0dp"

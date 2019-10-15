@@ -24,9 +24,11 @@ import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.adapter.WorkMatesAdapter
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
 import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.utils.ConverterHelper
 import kotlinx.android.synthetic.main.activity_details_restaurant.*
 import retrofit2.Call
 import retrofit2.Response
+
 
 
 class DetailsRestaurantActivity : AppCompatActivity() {
@@ -43,6 +45,9 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
     //API service
     lateinit var mService: IGoogleAPIService
+
+    //set converter helper
+    private val converterHelper=ConverterHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,15 +103,27 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         return googlePlaceUrl.toString()//return the string url
     }
 
+
     private fun initDetailsRestaurant(response: Response<DetailsPlace>) {
         initStars(response.body()!!.result.rating)
         initWebSite(response.body()!!.result.website)
         initCall(response.body()!!.result.formatted_phone_number)
         initPhotoRestaurant(response.body()!!.result.photos)
         initDetailsTextRestaurant(response.body()!!.result.name, response.body()!!.result.formatted_address)
+        if(response.body()?.result?.opening_hours!=null){
+            initOpenningHourOfDay(response.body()?.result?.opening_hours!!.weekday_text[converterHelper.getDayOfWeek()])
+        }
 
 
     }
+
+    private fun initOpenningHourOfDay(openingHoursText: String?){
+        if (openingHoursText != null){
+            textView_OpenningHours.text= openingHoursText
+            Log.d("debug", openingHoursText)
+        }
+    }
+
 
     private fun initStars(rating: Double) {//set the rating bar with the rating google map
         val ratingBarFloat = (rating * (3.0f / 5.0f))//convert rating to 3.0
@@ -116,7 +133,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         } else ratingBar.visibility = View.GONE//if rating null = gone the rating bar
     }
 
-    private fun initWebSite(webSite: String) {
+    private fun initWebSite(webSite: String?) {
         if (webSite != null) {//if website is not null
             imageButtonSite.visibility = View.VISIBLE//display the button
             textViewSite.visibility = View.VISIBLE//display the text
@@ -124,7 +141,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         }
     }
 
-    private fun initCall(phoneNumber: String) {
+    private fun initCall(phoneNumber: String?) {
         if (phoneNumber != null) {//if phone number is not null
             imageButtonCall.visibility = View.VISIBLE//display the button
             textViewCall.visibility = View.VISIBLE//display the text
@@ -132,7 +149,7 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         }
     }
 
-    private fun initPhotoRestaurant(photo: List<Photo>) {
+    private fun initPhotoRestaurant(photo: List<Photo>?) {
         if (photo != null) {//if photo is not null
             val photoUrl =
                 "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + photo[0].photo_reference + "&key=" + getString(

@@ -52,10 +52,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val user = FirebaseAuth.getInstance().currentUser//get current user
 
     //current position
-    var mCurrentLat:Double=0.0
-    var mCurrentLng:Double=0.0
-
-
+    var mCurrentLat: Double = 0.0
+    var mCurrentLng: Double = 0.0
 
 
     //request check setting code
@@ -63,7 +61,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private const val AUTOCOMPLETE_REQUEST = 2
     }
 
-
+    /* ------------------------------
+                                                LIFE CYCLE APK
+                                                                                      ------------------------------------  */
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -93,9 +93,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         bottom_navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         getUserInformation()
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))//register local broadcast manager
     }
 
+
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))//register local broadcast manager
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this)
+            .unregisterReceiver(broadcastReceiver)//unregister local broadcast manager
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(this)
+            .unregisterReceiver(broadcastReceiver)//unregister local broadcast manager
+    }
 
     override fun onBackPressed() {
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
@@ -106,40 +125,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /* ------------------------------
+                                                SET USER INTERFACE
+                                                                                      ------------------------------------  */
 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        //create option menu on main activity
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        //set action on click of search menu
         when (item.itemId) {
             R.id.menu_search -> {
-                initAutoCompleteIntent()// init the autocomplete intent in the click button search
+                initAutoCompleteIntent()// launch the autocomplete intent in the click button search
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
+        // set action on click menu drawer
         when (item.itemId) {
             R.id.nav_your_lunch -> {
-                getUserRestaurantChoiceFirestore()
+                getUserRestaurantChoiceFirestore()//launch the details activity of user restaurant
                 return true
             }
             R.id.nav_settings -> {
-                val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
-                startActivity(intentSettingsActivity)
+                val intentSettingsActivity =
+                    Intent(this, SettingsActivity::class.java)//init the setting activity intent
+                startActivity(intentSettingsActivity)//launch the settings activity
                 return true
             }
             R.id.nav_logout -> {
-                alertDialogLogOut()
+                alertDialogLogOut()//launch the dialog for confirm log out
                 return true
             }
 
@@ -150,55 +171,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
-
-
-    fun changeIconMenuDrawer() {
+    fun changeIconMenuDrawer() {//change the icon of menu drawer (burger)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_burger)
     }
 
-    fun replaceFragment(fragment: Fragment) {
+    fun replaceFragment(fragment: Fragment) {//method for manage the fragment change
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, fragment)
         fragmentTransaction.commit()
-
-    }
-
-    fun getUserInformation() {
-        val navHeaderView = nav_view_drawer.getHeaderView(0)
-        val navUserName = navHeaderView.tv_user_name
-        val navUserMail = navHeaderView.tv_user_mail
-        val navUserPic = navHeaderView.profile_image_Work_Mates
-        val user = FirebaseAuth.getInstance().currentUser
-        navUserName.text = user?.displayName
-        navUserMail.text = user?.email
-        if (user?.photoUrl != null) {
-            Picasso.get().load(user?.photoUrl).into(navUserPic)
-        }
-
-
-    }
-
-
-    private fun logOutUser() {
-
-        AuthUI.getInstance().signOut(this@MainActivity)
-            .addOnCompleteListener {
-
-                val welcomeActivityIntent = Intent(this, WelcomeActivity::class.java)
-                startActivity(welcomeActivityIntent)
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this@MainActivity, e.message, Toast.LENGTH_LONG).show()
-
-            }
     }
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+        // manage click of bottom menu
         when (item.itemId) {
             R.id.navigation_maps -> {
-                replaceFragment(MapsFragment())
+                replaceFragment(MapsFragment())//launch maps fragment
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_list -> {
@@ -215,12 +204,44 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_workmates -> {
-                replaceFragment(WorkmatesFragment())
+                replaceFragment(WorkmatesFragment())//launch workmates fragment
                 return@OnNavigationItemSelectedListener true
             }
         }
         false
     }
+
+    private fun startDetailsActivityChoiceRestaurant(placeId: String?) {//set up the details activity
+        val intentDetailsActivty = Intent(this, DetailsRestaurantActivity::class.java)
+        intentDetailsActivty.putExtra("PlaceId", placeId)
+        startActivity(intentDetailsActivty)
+    }
+
+    private fun isLocationEnabled(mContext: Context): Boolean {//check if location is enabled
+        val lm = mContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    /* ------------------------------
+                                                LOAD/SEND DATA
+                                                                                      ------------------------------------  */
+    fun getUserInformation() {
+        val navHeaderView = nav_view_drawer.getHeaderView(0)
+        val navUserName = navHeaderView.tv_user_name
+        val navUserMail = navHeaderView.tv_user_mail
+        val navUserPic = navHeaderView.profile_image_Work_Mates
+        val user = FirebaseAuth.getInstance().currentUser
+        navUserName.text = user?.displayName
+        navUserMail.text = user?.email
+        if (user?.photoUrl != null) {
+            Picasso.get().load(user?.photoUrl).into(navUserPic)
+        }
+
+
+    }
+
 
     //Get nearbyPlaces and current location from mapsFragment
     private val broadcastReceiver = object : BroadcastReceiver() {
@@ -232,10 +253,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     mListRestaurant = intent.getParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY")!!
-                    mCurrentLat=intent.getDoubleExtra("CURRENT_LAT",0.0)
-                    mCurrentLng=intent.getDoubleExtra("CURRENT_LNG",0.0)
+                    mCurrentLat = intent.getDoubleExtra("CURRENT_LAT", 0.0)
+                    mCurrentLng = intent.getDoubleExtra("CURRENT_LNG", 0.0)
 
-                    Log.d("DEBUG_LOCATION_LATLNG",mCurrentLat.toString()+"   "+mCurrentLng.toString())
                 }
 
             }
@@ -253,7 +273,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         fragmentTransaction.commit()
     }
 
-    private fun getUserRestaurantChoiceFirestore() {
+    private fun getUserRestaurantChoiceFirestore() { //load current user informations
         userHelper.getUser(user!!.uid).addOnSuccessListener { documentSnapshot ->
             val user = documentSnapshot.toObject(User::class.java)
             if (user!!.restaurantUid != null) {
@@ -268,18 +288,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
     }
 
-    private fun startDetailsActivityChoiceRestaurant(placeId: String?) {
-        val intentDetailsActivty = Intent(this, DetailsRestaurantActivity::class.java)
-        intentDetailsActivty.putExtra("PlaceId", placeId)
-        startActivity(intentDetailsActivty)
+    /* ------------------------------
+                                                LOG OUT USER FIREBASE
+                                                                                      ------------------------------------  */
+    private fun logOutUser() {
+
+        AuthUI.getInstance().signOut(this@MainActivity)
+            .addOnCompleteListener {
+
+                val welcomeActivityIntent = Intent(this, WelcomeActivity::class.java)
+                startActivity(welcomeActivityIntent)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this@MainActivity, e.message, Toast.LENGTH_LONG).show()
+
+            }
     }
 
-    private fun isLocationEnabled(mContext: Context): Boolean {
-        val lm = mContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER
-        )
-    }
+
 /* ------------------------------
                                             MENU SEARCH WITH AUTOCOMPLETE SDK
                                                                                   ------------------------------------  */
@@ -288,14 +314,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val fields = Arrays.asList(Place.Field.ID, Place.Field.NAME)//init the fields return from autocomplete
         val intentAutocomplete = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-            .setLocationRestriction(RectangularBounds.newInstance(
-                 com.google.android.gms.maps.model.LatLng(mCurrentLat-0.05, mCurrentLng-0.05),
-                 com.google.android.gms.maps.model.LatLng(mCurrentLat+0.05, mCurrentLng+0.05)))
-            .setTypeFilter(TypeFilter.ESTABLISHMENT)
+            .setLocationRestriction(
+                RectangularBounds.newInstance(//set the restrict rectangular bounds for search
+                    com.google.android.gms.maps.model.LatLng(mCurrentLat - 0.05, mCurrentLng - 0.05),
+                    com.google.android.gms.maps.model.LatLng(mCurrentLat + 0.05, mCurrentLng + 0.05)
+                )
+            )
+            .setTypeFilter(TypeFilter.ESTABLISHMENT)//set the filter type
             .build(this)
         startActivityForResult(intentAutocomplete, AUTOCOMPLETE_REQUEST)
     }
-
 
 
 /* ------------------------------
@@ -337,31 +365,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .show()
     }
 
-    private fun alertDialogForCloseApp(){
+    private fun alertDialogForCloseApp() {
         AlertDialog.Builder(this)
             .setMessage(R.string.pop_pup_message_leave)
-            .setPositiveButton(R.string.pop_pup_yes){dialogInterface, i ->
+            .setPositiveButton(R.string.pop_pup_yes) { dialogInterface, i ->
                 super.onBackPressed()
             }
-            .setNegativeButton(R.string.pop_pup_no,null)
+            .setNegativeButton(R.string.pop_pup_no, null)
             .show()
-    }
-
-
-
-    override fun onResume() {
-        super.onResume()
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, IntentFilter("DATA_ACTION"))
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
     }
 
 
