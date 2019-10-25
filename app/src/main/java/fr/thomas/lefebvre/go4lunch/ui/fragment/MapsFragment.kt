@@ -16,13 +16,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import fr.thomas.lefebvre.go4lunch.BuildConfig
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.nearby.NearbyPlaces
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.service.UserHelper
 import fr.thomas.lefebvre.go4lunch.utils.ConverterHelper
 import kotlinx.android.synthetic.main.app_bar_main.*
 import retrofit2.Call
@@ -48,6 +49,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     lateinit var mGoogleMap: GoogleMap
     lateinit var mMapVIew: MapView
     lateinit var mView: View
+    val API_KEY = BuildConfig.API_BROWSER_PLACE
 
     //location
     private lateinit var mLastLocation: Location
@@ -74,7 +76,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
     private val userHelper = UserHelper()
 
     //util converter class
-    private val converterHelper=ConverterHelper()
+    private val converterHelper = ConverterHelper()
 
 
     override fun onCreateView(
@@ -97,6 +99,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     }
 
+
+    /* ------------------------------
+                                        UPDATE UI
+                                                                              ------------------------------------  */
     //init google map view
     private fun initMap() {
         mMapVIew = mView.findViewById(R.id.mapView)
@@ -166,127 +172,22 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
             }
         }
-
     }
 
+    fun addMarkerOnMap(restaurantFormatted: RestaurantFormatted, i: Int, bitmapDescriptor: BitmapDescriptor) {
+        val lat = restaurantFormatted.lat//set the latitude of place
+        val lng = restaurantFormatted.long//set the longitude of place
+        val placeName = restaurantFormatted.name//set the name of place
+        val latLng = LatLng(lat, lng)//set the position of place
+        Log.d("PLACE_DEBUG", placeName!!)
+        val markerOptions = MarkerOptions()//set variables marker
+            .position(latLng)
+            .title(placeName)
+            .icon(bitmapDescriptor)
+            .zIndex(i.toFloat())
 
-    fun nearbyPlaces(latitude: Double, longitude: Double) {
+        mGoogleMap.addMarker(markerOptions)//add marker in the map
 
-        //build url request base on location
-        val url = getUrl(latitude, longitude)
-
-        mService.getNearbyPlaces(url)//call the request
-            .enqueue(object : Callback<NearbyPlaces> {
-                override fun onFailure(call: Call<NearbyPlaces>, t: Throwable) {//is request is failure
-                    Toast.makeText(requireContext(), "" + t.message, Toast.LENGTH_LONG).show()
-                    Log.d("REQUEST_DEBUG", t.message!!)
-                }
-
-                override fun onResponse(
-                    call: Call<NearbyPlaces>,
-                    response: Response<NearbyPlaces>
-                ) {//is request is success
-
-                    if (response!!.isSuccessful) {
-                        Log.d("REQUEST_DEBUG", response.message())
-                        setListRestaurantFormated(response)
-                        sendNearbyPlacesToActivity(listRestaurant)//send nearby places data on the main activity
-                    }
-                }
-            }
-            )
-
-    }
-
-
-    fun setListRestaurantFormated(response: Response<NearbyPlaces>) {
-        listRestaurant = ArrayList()
-        for (i in 0 until response!!.body()!!.results!!.size) {
-            val googlePlace = response.body()!!.results[i]//set the place in term of index
-            val lat = googlePlace.geometry!!.location!!.lat//set the latitude of place
-            val lng = googlePlace.geometry!!.location!!.lng//set the longitude of place
-            val distance = converterHelper.computeDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
-            val openHours: Boolean?
-            if (googlePlace.opening_hours != null) {
-                openHours = googlePlace.opening_hours.open_now
-            } else openHours = null
-            val rating: Double?
-            if (googlePlace.rating != null) {
-                rating = googlePlace.rating
-            } else rating = null
-            val photoUrl: String?
-            if (googlePlace.photos != null) {
-                photoUrl = googlePlace.photos[0].photo_reference
-            } else photoUrl = null
-
-            val restaurantFormatted = RestaurantFormatted(
-                googlePlace.place_id,
-                googlePlace.name,
-                googlePlace.vicinity,
-                openHours,
-                rating,
-                photoUrl,
-                distance,
-                lat,
-                lng
-            )//set restaurant
-            checkUserJoinThisRestaurant(restaurantFormatted, i)
-            listRestaurant.add(restaurantFormatted)//add restaurant on list restaurant
-
-        }
-    }
-
-//    fun calculDistance(currentLat: Double, currentLng: Double, placeLat: Double, placeLng: Double): String {
-//        // Set array of distance
-//        val distanceArray = floatArrayOf(0f)
-//        //calcul distance between current location and places location
-//        Location.distanceBetween(
-//            currentLat, currentLng,//current lat and lng
-//            placeLat, placeLng,//place lat and lng
-//            distanceArray
-//        )//array for the result
-//        val distance: String = distanceArray[0].toInt().toString()//add the distance in the model
-//        return distance
-//    }
-
-    fun getUrl(latitude: Double, longitude: Double): String {
-        val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json")
-        googlePlaceUrl.append("?location=$latitude,$longitude")//set user position
-        googlePlaceUrl.append("&rankby=distance")//=1km
-        googlePlaceUrl.append("&type=restaurant")//set type of search
-        googlePlaceUrl.append("&key=${getString(R.string.api_browser_places)}")//api key
-
-        Log.d("URL_DEBUG", googlePlaceUrl.toString())
-        return googlePlaceUrl.toString()//return the string url
-
-    }
-
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            LOCATION_REQUEST -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    setUpMap()
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return
-            }
-            else -> {
-                // Ignore all other requests.
-            }
-        }
-    }
-
-
-    fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
-        val intent = Intent("DATA_ACTION")//init broadcast intent
-        intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
-        intent.putExtra("CURRENT_LAT", mLasttLat)
-        intent.putExtra("CURRENT_LNG", mLasttLng)
-        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 
     fun checkUserJoinThisRestaurant(restaurantFormatted: RestaurantFormatted, i: Int) {
@@ -313,20 +214,119 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickList
 
     }
 
-    fun addMarkerOnMap(restaurantFormatted: RestaurantFormatted, i: Int, bitmapDescriptor: BitmapDescriptor) {
-        val lat = restaurantFormatted.lat//set the latitude of place
-        val lng = restaurantFormatted.long//set the longitude of place
-        val placeName = restaurantFormatted.name//set the name of place
-        val latLng = LatLng(lat, lng)//set the position of place
-        Log.d("PLACE_DEBUG", placeName!!)
-        val markerOptions = MarkerOptions()//set variables marker
-            .position(latLng)
-            .title(placeName)
-            .icon(bitmapDescriptor)
-            .zIndex(i.toFloat())
+    /* ------------------------------
+                                    GET NEARBY PLACES WHITH GOOGLE PLACE API
+                                                                          ------------------------------------  */
 
-        mGoogleMap.addMarker(markerOptions)//add marker in the map
 
+    fun nearbyPlaces(latitude: Double, longitude: Double) {
+        //build url request base on location
+        val url = getUrl(latitude, longitude)
+
+        mService.getNearbyPlaces(url)//call the request
+            .enqueue(object : Callback<NearbyPlaces> {
+                override fun onFailure(call: Call<NearbyPlaces>, t: Throwable) {//is request is failure
+                    Toast.makeText(requireContext(), "" + t.message, Toast.LENGTH_LONG).show()
+                    Log.d("REQUEST_DEBUG", t.message!!)
+                }
+
+                override fun onResponse(
+                    call: Call<NearbyPlaces>,
+                    response: Response<NearbyPlaces>
+                ) {//is request is success
+
+                    if (response.isSuccessful) {
+                        Log.d("REQUEST_DEBUG", response.message())
+                        setListRestaurantFormated(response)
+                        sendNearbyPlacesToActivity(listRestaurant)//send nearby places data on the main activity
+                    }
+                }
+            }
+            )
+
+    }
+
+
+    fun setListRestaurantFormated(response: Response<NearbyPlaces>) {
+        listRestaurant = ArrayList()
+        for (i in 0 until response.body()!!.results.size) {
+            val googlePlace = response.body()!!.results[i]//set the place in term of index
+            val lat = googlePlace.geometry.location.lat//set the latitude of place
+            val lng = googlePlace.geometry.location.lng//set the longitude of place
+            val distance = converterHelper.computeDistance(mLastLocation.latitude, mLastLocation.longitude, lat, lng)
+            val openHours: Boolean?
+            if (googlePlace.opening_hours != null) {//get opening state
+                openHours = googlePlace.opening_hours.open_now
+            } else openHours = null
+            val rating: Double?
+            if (googlePlace.rating != null) {//get rating
+                rating = googlePlace.rating
+            } else rating = null
+            val photoUrl: String?
+            if (googlePlace.photos != null) {
+                photoUrl = googlePlace.photos[0].photo_reference
+            } else photoUrl = null
+
+            val restaurantFormatted = RestaurantFormatted(//set the restaurant formated list
+                googlePlace.place_id,
+                googlePlace.name,
+                googlePlace.vicinity,
+                openHours,
+                rating,
+                photoUrl,
+                distance,
+                lat,
+                lng
+            )//set restaurant
+            checkUserJoinThisRestaurant(restaurantFormatted, i)
+            listRestaurant.add(restaurantFormatted)//add restaurant on list restaurant
+
+        }
+    }
+
+
+    fun getUrl(latitude: Double, longitude: Double): String {
+        val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json")
+        googlePlaceUrl.append("?location=$latitude,$longitude")//set user position
+        googlePlaceUrl.append("&rankby=distance")//=1km
+        googlePlaceUrl.append("&type=restaurant")//set type of search
+        googlePlaceUrl.append("&key=$API_KEY")//api key
+
+        Log.d("URL_DEBUG", googlePlaceUrl.toString())
+        return googlePlaceUrl.toString()//return the string url
+
+    }
+
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            LOCATION_REQUEST -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    setUpMap()
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return
+            }
+            else -> {
+                // Ignore all other requests.
+            }
+        }
+    }
+
+    /* ------------------------------
+                                        SEND NEARBY PLACE TO MAIN ACTIVITY
+                                                                              ------------------------------------  */
+
+
+    fun sendNearbyPlacesToActivity(listRestaurant: ArrayList<RestaurantFormatted>) {
+        val intent = Intent("DATA_ACTION")//init broadcast intent
+        intent.putParcelableArrayListExtra("LIST_RESTAURANT_TO_ACTIVITY", listRestaurant)//init the data for send
+        intent.putExtra("CURRENT_LAT", mLasttLat)
+        intent.putExtra("CURRENT_LNG", mLasttLng)
+        LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)//send the data
     }
 
 

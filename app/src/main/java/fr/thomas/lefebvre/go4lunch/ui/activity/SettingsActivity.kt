@@ -11,10 +11,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.service.UserHelper
 import kotlinx.android.synthetic.main.activity_settings.*
 
 class SettingsActivity : AppCompatActivity() {
@@ -37,6 +36,9 @@ class SettingsActivity : AppCompatActivity() {
         switchListener()
     }
 
+    /* ------------------------------
+                                                UPDATE UI
+                                                                                      ------------------------------------  */
     private fun getCurrentUser() {
         textView_Settings_Name.text = currentUser?.displayName//set the user name
         textView_Settings_Mail.text = currentUser?.email//set the user mail
@@ -46,8 +48,10 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-
-    private fun deleteAccount() {//TODO DELETE USER ON DATABASE
+    /* ------------------------------
+                                                DELETE USER
+                                                                                      ------------------------------------  */
+    private fun deleteAccount() {
         if (currentUser != null) {
             userHelper.deleteUser(currentUser.uid)
                 .addOnSuccessListener {
@@ -94,19 +98,10 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun switchListener() {
-        switch_notifications.setOnClickListener(View.OnClickListener {
-            if (switch_notifications.isChecked) {
-                userHelper.updateUserNotificationState(true, currentUser!!.uid)
-                saveSwitch()
-            } else {
-                userHelper.updateUserNotificationState(false, currentUser!!.uid)
-                saveSwitch()
-            }
-        })
-    }
 
-
+    /* ------------------------------
+                                                LOAD AND SAVE DATE FOR SWITCH
+                                                                                      ------------------------------------  */
     fun saveSwitch() {//SAVE DATA METHOD IN SHARED PREF
         val sharedPreferences = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -119,5 +114,17 @@ class SettingsActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
         switch_notifications.isChecked = sharedPreferences.getBoolean(SWITCH, true)
 
+    }
+
+    private fun switchListener() {
+        switch_notifications.setOnClickListener(View.OnClickListener {
+            if (switch_notifications.isChecked) {
+                userHelper.updateUserNotificationState(true, currentUser!!.uid)
+                saveSwitch()
+            } else {
+                userHelper.updateUserNotificationState(false, currentUser!!.uid)
+                saveSwitch()
+            }
+        })
     }
 }

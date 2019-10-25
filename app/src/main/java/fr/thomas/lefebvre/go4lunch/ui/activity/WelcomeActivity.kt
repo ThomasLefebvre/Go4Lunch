@@ -9,7 +9,7 @@ import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import fr.thomas.lefebvre.go4lunch.R
 import java.util.*
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper as UserHelper
+import fr.thomas.lefebvre.go4lunch.service.UserHelper as UserHelper
 import com.google.android.gms.tasks.OnFailureListener
 
 
@@ -17,7 +17,7 @@ class WelcomeActivity : AppCompatActivity() {
 
     private val REQUEST_CODE: Int = 123
     lateinit var providers: List<AuthUI.IdpConfig>
-     private var userHelper: UserHelper= UserHelper()
+    private var userHelper: UserHelper = UserHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,13 +35,13 @@ class WelcomeActivity : AppCompatActivity() {
             showSignInOptions()
         } else {
 
-            startSplashActivity()
+            startActivity()
             finish()
         }
 
     }
 
-    private fun showSignInOptions() {
+    private fun showSignInOptions() {// login activity build by firebase UI
         startActivityForResult(
             AuthUI.getInstance().createSignInIntentBuilder()//set the sign in activity with firebaseUI
                 .setAvailableProviders(providers)//set providers
@@ -53,18 +53,18 @@ class WelcomeActivity : AppCompatActivity() {
 
     }
 
-    private fun startSplashActivity() {
-        val intentMainActivity = Intent(this, SplashScreen::class.java)
+    private fun startActivity() {// start main activity after control of login
+        val intentMainActivity = Intent(this, MainActivity::class.java)
         startActivity(intentMainActivity)
     }
 
-    private fun checkCurrentUserIsConnected(): Boolean {
+    private fun checkCurrentUserIsConnected(): Boolean {// test if user is already connected
         val user = FirebaseAuth.getInstance().currentUser
         return user != null
     }
 
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {//login activity result for action
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE) {
 
@@ -72,7 +72,7 @@ class WelcomeActivity : AppCompatActivity() {
                 val user = FirebaseAuth.getInstance().currentUser//get current user
                 Toast.makeText(this, " ${user?.displayName} is connected", Toast.LENGTH_LONG).show()
                 createUserOnFirestoreDataBase()
-                startSplashActivity()
+                startActivity()
                 finish()
 
             } else {
@@ -81,24 +81,26 @@ class WelcomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun createUserOnFirestoreDataBase(){
-        val user=FirebaseAuth.getInstance().currentUser//get current user
-        val name=user?.displayName//get name current user
-        val email=user?.email//get email current user
-        val photoUrl=user?.photoUrl.toString()//get
-        val uidUser=user?.uid//get id current user
-        userHelper.getUser(uidUser!!).addOnCompleteListener { doc ->//get the response
-            if(!doc.result!!.exists()){//check if user not exist
-                userHelper.createUser(uidUser,name!!,email!!,photoUrl,null,null,null,true).addOnFailureListener(onFailureListener())//create user in data base if not exist
+    private fun createUserOnFirestoreDataBase() {//create user on database if not exist
+        val user = FirebaseAuth.getInstance().currentUser//get current user
+        val name = user?.displayName//get name current user
+        val email = user?.email//get email current user
+        val photoUrl = user?.photoUrl.toString()//get
+        val uidUser = user?.uid//get id current user
+        userHelper.getUser(uidUser!!).addOnCompleteListener { doc ->
+            //get the response
+            if (!doc.result!!.exists()) {//check if user not exist
+                userHelper.createUser(uidUser, name!!, email!!, photoUrl, null, null, null, true, arrayListOf())
+                    .addOnFailureListener(onFailureListener())//create user in data base if not exist
             }
         }
     }
 
-    protected fun onFailureListener(): OnFailureListener {
+    private fun onFailureListener(): OnFailureListener {//failure listener
         return OnFailureListener {
             Toast.makeText(
                 applicationContext,
-                getString(fr.thomas.lefebvre.go4lunch.R.string.error),
+                getString(R.string.error),
                 Toast.LENGTH_LONG
             ).show()
         }

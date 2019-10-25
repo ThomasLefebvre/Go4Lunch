@@ -40,6 +40,7 @@
     <string name="delete_account">Delete your account:</string>
     <string name="title_activity_details_restaurant">DetailsRestaurantActivity</string>
     <string name="action_settings">Settings</string>
+    <string name="like_this_restaurant">You like this restaurant!</string>
     <string name="open">Is open</string>
     <string name="closed">Is closed</string>
     <string name="call">CALL</string>

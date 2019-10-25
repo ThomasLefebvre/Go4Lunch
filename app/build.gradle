@@ -17,6 +17,9 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+
+        buildConfigField("String", "API_BROWSER_PLACE", API_BROWSER_PLACE)
+        buildConfigField("String", "API_DETAILS_PLACE", API_DETAILS_PLACE)
     }
     buildTypes {
         release {

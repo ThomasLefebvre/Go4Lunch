@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
+import fr.thomas.lefebvre.go4lunch.BuildConfig
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.database.User
 import fr.thomas.lefebvre.go4lunch.model.details.DetailsPlace
@@ -23,12 +24,12 @@ import fr.thomas.lefebvre.go4lunch.model.details.Photo
 import fr.thomas.lefebvre.go4lunch.ui.`object`.Common
 import fr.thomas.lefebvre.go4lunch.ui.adapter.WorkMatesAdapter
 import fr.thomas.lefebvre.go4lunch.ui.service.IGoogleAPIService
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.service.UserHelper
 import fr.thomas.lefebvre.go4lunch.utils.ConverterHelper
 import kotlinx.android.synthetic.main.activity_details_restaurant.*
 import retrofit2.Call
 import retrofit2.Response
-
+import java.util.*
 
 
 class DetailsRestaurantActivity : AppCompatActivity() {
@@ -45,9 +46,23 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
     //API service
     lateinit var mService: IGoogleAPIService
+    val API_KEY = BuildConfig.API_BROWSER_PLACE
 
     //set converter helper
-    private val converterHelper=ConverterHelper()
+    private val converterHelper = ConverterHelper()
+
+    /* ------------------------------
+                                        OVERRIDE METHOD
+                                                                              ------------------------------------  */
+    override fun onStart() {
+        super.onStart()
+        adapter.startListening()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        adapter.stopListening()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,17 +72,22 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         googlePlacesDetailsApi()
         startWebViewActivity()
         startCallActivity()
+        likeRestaurant()
         rejoinButtonClick()
         getUserJoinRestaurant()
     }
 
+    /* ------------------------------
+                                      GET RESTAURANT INFORMATION
+                                                                            ------------------------------------  */
 
-    private fun initPlace() {
+
+    private fun initPlace() {//get the id restaurant of main activity
         placeId = intent.getStringExtra("PlaceId")!!
     }
 
-    private fun googlePlacesDetailsApi() {
-        val url = getUrl(placeId)
+    private fun googlePlacesDetailsApi() {//call api google details for get information of restaurant
+        val url = getUrl(placeId)//get url for call api
         mService.getDetailsPlace(url)
             .enqueue(object : retrofit2.Callback<DetailsPlace> {
                 override fun onFailure(call: Call<DetailsPlace>, t: Throwable) {//is request is failure
@@ -82,8 +102,6 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
                         initDetailsRestaurant(response)
-
-
                     }
                 }
 
@@ -91,35 +109,43 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
     }
 
-    private fun getUrl(placeId: String): String {
+    private fun getUrl(placeId: String): String {//set  and return the string of api call
         val googlePlaceUrl = StringBuilder("https://maps.googleapis.com/maps/api/place/details/")
         googlePlaceUrl.append("json?place_id=$placeId")//set user position
         googlePlaceUrl.append(
-            "&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=${getString(
-                R.string.api_browser_places
-            )}"
+            "&fields=name,photo,opening_hours,website,rating,formatted_phone_number,formatted_address&key=$API_KEY"
         )//set parameters and api key
         Log.d("URL_DEBUG", googlePlaceUrl.toString())
         return googlePlaceUrl.toString()//return the string url
     }
 
 
-    private fun initDetailsRestaurant(response: Response<DetailsPlace>) {
+    /* ------------------------------
+                                        UPDATE UI WITH RESTAURANT INFOS
+                                                                              ------------------------------------  */
+
+    private fun initDetailsRestaurant(response: Response<DetailsPlace>) {//regoup all update
         initStars(response.body()!!.result.rating)
         initWebSite(response.body()!!.result.website)
         initCall(response.body()!!.result.formatted_phone_number)
         initPhotoRestaurant(response.body()!!.result.photos)
         initDetailsTextRestaurant(response.body()!!.result.name, response.body()!!.result.formatted_address)
-        if(response.body()?.result?.opening_hours!=null){
-            initOpenningHourOfDay(response.body()?.result?.opening_hours!!.weekday_text[converterHelper.getDayOfWeek()])
+        val calendar = Calendar.getInstance()
+        val dayInt = calendar.get(Calendar.DAY_OF_WEEK)
+        if (response.body()?.result?.opening_hours != null) {
+            initOpenningHourOfDay(
+                response.body()?.result?.opening_hours!!.weekday_text[converterHelper.getDayOfWeek(
+                    dayInt
+                )]
+            )
         }
 
 
     }
 
-    private fun initOpenningHourOfDay(openingHoursText: String?){
-        if (openingHoursText != null){
-            textView_OpenningHours.text= openingHoursText
+    private fun initOpenningHourOfDay(openingHoursText: String?) {//set the openning hours
+        if (openingHoursText != null) {
+            textView_OpenningHours.text = openingHoursText
             Log.d("debug", openingHoursText)
         }
     }
@@ -164,7 +190,11 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         textViewAdressRestaurantDetail.text = adress//display the restaurant address
     }
 
-    private fun startWebViewActivity() {
+    /* ------------------------------
+                                               ACTION FOR BUTTON
+                                                                                     ------------------------------------  */
+
+    private fun startWebViewActivity() {//stat site web of restaurant
         imageButtonSite.setOnClickListener {
             val webViewIntent = Intent(this, WebViewActivity::class.java)
             webViewIntent.putExtra(Intent.EXTRA_TEXT, webSiteUrl)
@@ -172,10 +202,17 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         }
     }
 
-    private fun startCallActivity() {
+    private fun startCallActivity() {// start phone of restaurant
         imageButtonCall.setOnClickListener {
             val intentCall = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumberIntent"))
             startActivity(intentCall)
+        }
+    }
+
+    private fun likeRestaurant() {//add restaurant id in firebase data
+        imageButtonLike.setOnClickListener {
+            Toast.makeText(this, getString(R.string.like_this_restaurant), Toast.LENGTH_LONG).show()
+            userHelper.udpateUserRestaurantLike(placeId, currentUser!!.uid)
         }
     }
 
@@ -183,38 +220,56 @@ class DetailsRestaurantActivity : AppCompatActivity() {
         rejoinActionButton.setOnClickListener {
             if (currentUser != null) {
 
-                AlertDialog.Builder(this)
+                AlertDialog.Builder(this)// alert dialog for confirm the choice
                     .setMessage(R.string.pop_pup_message_choice_restaurant)
                     .setPositiveButton(
                         R.string.pop_pup_yes
                     ) { _, _ ->
-                        userHelper.updateUserRestaurantUid(placeId, currentUser.uid)
+                        userHelper.updateUserRestaurantUid(
+                            placeId,
+                            currentUser.uid
+                        )//update the restaurant joined on the firebase data
                         val restaurantName = textViewNameRestaurantDetail.text.toString()
                         userHelper.updateUserRestaurantName(restaurantName, currentUser.uid)
-                        userHelper.updateUserAdress(textViewAdressRestaurantDetail.text.toString() ,currentUser.uid)
-                        Toast.makeText(this, getString(R.string.toast_message_choice_restaurant), Toast.LENGTH_LONG)
+                        userHelper.updateUserAdress(textViewAdressRestaurantDetail.text.toString(), currentUser.uid)
+                        Toast.makeText(
+                            this,
+                            getString(R.string.toast_message_choice_restaurant),
+                            Toast.LENGTH_LONG
+                        )//Toast message for confirm the choice
                             .show()
 
                     }
-                    .setNegativeButton(R.string.pop_pup_no, null)
+                    .setNegativeButton(R.string.pop_pup_no, null)//annul the choice
                     .show()
 
             }
         }
     }
 
+    private fun articleClick(itemClick: User) {//action for click on item of recyclerview workmate
+        Toast.makeText(this, itemClick.name, Toast.LENGTH_LONG).show()
+
+    }
+
+
+    /* ------------------------------
+                                            GET THE WORKMATE CHOICE THIS RESTAURANT FOR INIT RECYCLERVIEW
+                                                                                  ------------------------------------  */
 
     private fun getUserJoinRestaurant() {
-        val query = FirebaseFirestore.getInstance()
+        val query = FirebaseFirestore.getInstance()//set the query call
             .collection("users")
             .whereEqualTo("restaurantUid", placeId)
 
-        val options = FirestoreRecyclerOptions.Builder<User>()
+        val options = FirestoreRecyclerOptions.Builder<User>()//get option of recyclerview
             .setQuery(query, User::class.java)
             .build()
 
-        adapter = WorkMatesAdapter(options){ itemClick: User ->
-            articleClick(itemClick)}
+        adapter = WorkMatesAdapter(options) { itemClick: User ->
+            //set the recycler view
+            articleClick(itemClick)
+        }
         recyclerView_Workmates_Details.setHasFixedSize(true)
         recyclerView_Workmates_Details.layoutManager = LinearLayoutManager(this)
         recyclerView_Workmates_Details.addItemDecoration(
@@ -227,17 +282,5 @@ class DetailsRestaurantActivity : AppCompatActivity() {
 
     }
 
-    private fun articleClick(itemClick: User) {//start details activity if click on article
 
-    }
-
-    override fun onStart() {
-        super.onStart()
-        adapter.startListening()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        adapter.stopListening()
-    }
 }

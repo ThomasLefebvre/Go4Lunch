@@ -1,11 +1,8 @@
-package fr.thomas.lefebvre.go4lunch.ui.service
+package fr.thomas.lefebvre.go4lunch.service
 
 
 import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.*
 import fr.thomas.lefebvre.go4lunch.model.database.User
 
 
@@ -22,8 +19,8 @@ class UserHelper {
 
     // --- CREATE ---
 
-    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String?,restaurantAdress:String?, restaurantUid:String?,notificationIsActived: Boolean): Task<Void> {
-        val userToCreate = User(uid, username, email,photoUrl,restaurantName,restaurantAdress,restaurantUid,notificationIsActived)
+    fun createUser(uid: String, username: String, email: String, photoUrl:String, restaurantName: String?,restaurantAdress:String?, restaurantUid:String?,notificationIsActived: Boolean,listRestaurantLiked:ArrayList<String>): Task<Void> {
+        val userToCreate = User(uid, username, email,photoUrl,restaurantName,restaurantAdress,restaurantUid,notificationIsActived,listRestaurantLiked)
         return getUsersCollection().document(uid).set(userToCreate)
     }
 
@@ -32,9 +29,7 @@ class UserHelper {
     fun getUser(uid: String): Task<DocumentSnapshot> {
         return getUsersCollection().document(uid).get()
     }
-    fun getAllUser(): Task<QuerySnapshot> {
-        return getUsersCollection().get()
-    }
+
     fun getUserByPlaceId(restaurantUid:String): Task<QuerySnapshot> {
         return getUsersCollection().whereEqualTo("restaurantUid",restaurantUid).get()
     }
@@ -43,9 +38,6 @@ class UserHelper {
     // --- UPDATE ---
 
 
-    fun updateUsername(name: String, uid: String): Task<Void> {
-        return getUsersCollection().document(uid).update("name", name)
-    }
 
     fun updateUserRestaurantUid(restaurantUid: String, uid: String): Task<Void> {
         return getUsersCollection().document(uid).update("restaurantUid", restaurantUid)
@@ -60,6 +52,10 @@ class UserHelper {
 
     fun updateUserNotificationState(notificationIsActived: Boolean,uid:String):Task<Void>{
         return getUsersCollection().document(uid).update("notificationIsActived",notificationIsActived)
+    }
+
+    fun udpateUserRestaurantLike(restaurantUidString:String,uid:String):Task<Void>{
+        return getUsersCollection().document(uid).update("listRestaurantLiked",FieldValue.arrayUnion(restaurantUidString))
     }
 
 

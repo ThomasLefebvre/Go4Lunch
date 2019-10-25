@@ -57,5 +57,7 @@
     <string name="message_notif">Vous mangez à</string>
     <string name="message_notif_with">avec</string>
 
+    <string name="like_this_restaurant">Vous aimez ce restaurant!</string>
+
 
 </resources>

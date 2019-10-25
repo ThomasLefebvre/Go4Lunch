@@ -6,10 +6,10 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Url
 
-interface IGoogleAPIService {
+interface IGoogleAPIService { //Request for api call
     @GET
-    fun getNearbyPlaces(@Url url:String):Call<NearbyPlaces>
+    fun getNearbyPlaces(@Url url:String):Call<NearbyPlaces>// request for nearby places
 
     @GET
-    fun getDetailsPlace(@Url url:String):Call<DetailsPlace>
+    fun getDetailsPlace(@Url url:String):Call<DetailsPlace>// request for details place
 }

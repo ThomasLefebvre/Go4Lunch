@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.ui.activity.DetailsRestaurantActivity
-import fr.thomas.lefebvre.go4lunch.ui.activity.MainActivity
 import fr.thomas.lefebvre.go4lunch.ui.adapter.NearbyPlacesAdapter
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_list.*
@@ -54,7 +53,8 @@ class ListFragment : Fragment() {
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && isLocationEnabled(requireContext())) {
+            ) == PackageManager.PERMISSION_GRANTED && isLocationEnabled(requireContext())
+        ) {
             initBundleWithNearbyRestaurant(bundle)
             textView_List_Empty_Location_No_Permission.visibility = View.GONE
         }
@@ -63,6 +63,15 @@ class ListFragment : Fragment() {
 
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+
+    }
+
+    /* ------------------------------
+                                            GET THE LIST OF RESTAURANT FROM MAIN ACTIVITY
+                                                                                  ------------------------------------  */
     private fun initBundleWithNearbyRestaurant(bundle: Bundle?) {
         listRestaurant = bundle!!.getParcelableArrayList("LIST_RESTAURANT_TO_FRAGMENTS")!!
         if (listRestaurant.size <= 1) {
@@ -73,6 +82,9 @@ class ListFragment : Fragment() {
         }
     }
 
+    /* ------------------------------
+                                            SET RECYCLER VIEW
+                                                                                  ------------------------------------  */
     private fun setRecyclerView(listPlaces: List<RestaurantFormatted>) {
         view!!.recyclerView.apply {
             layoutManager = LinearLayoutManager(activity)
@@ -92,11 +104,9 @@ class ListFragment : Fragment() {
 
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        retainInstance = true
-
-    }
+    /* ------------------------------
+                                            CHECK THE LOCATION ENABLED
+                                                                                  ------------------------------------  */
 
     private fun isLocationEnabled(mContext: Context): Boolean {
         val lm = mContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager

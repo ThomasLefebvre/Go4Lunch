@@ -1,7 +1,6 @@
 package fr.thomas.lefebvre.go4lunch.ui.adapter
 
 import android.content.Context
-import android.media.Image
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +13,12 @@ import com.squareup.picasso.Picasso
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.database.User
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
-import kotlinx.android.synthetic.main.activity_details_restaurant.*
+import fr.thomas.lefebvre.go4lunch.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.utils.ConverterHelper
 import java.lang.StringBuilder
 
 
+@Suppress("DEPRECATION")
 class NearbyPlacesAdapter(
 
     val context: Context,
@@ -43,6 +43,7 @@ class NearbyPlacesAdapter(
 
     class ViewHolder(elementList: View) : RecyclerView.ViewHolder(elementList) {
         private val userHelper: UserHelper = UserHelper()
+        private val converterHelper = ConverterHelper()
 
 
         val tvNamePlace: TextView = itemView.findViewById(R.id.textViewName)
@@ -51,9 +52,8 @@ class NearbyPlacesAdapter(
         val tvDistance: TextView = itemView.findViewById(R.id.textViewDistance)
         val photoPlace: ImageView = itemView.findViewById(R.id.photoPlace)
         val ratingBarRv: RatingBar = itemView.findViewById(R.id.ratingBarRv)
-        val tvNumbers:TextView=itemView.findViewById(R.id.textView_Number_Workmates)
-        val imageWorkmate:ImageView=itemView.findViewById(R.id.imageViewWorkmates)
-
+        val tvNumbers: TextView = itemView.findViewById(R.id.textView_Number_Workmates)
+        val imageWorkmate: ImageView = itemView.findViewById(R.id.imageViewWorkmates)
 
 
         fun bind(context: Context, restaurant: RestaurantFormatted, listener: (RestaurantFormatted) -> Unit) =
@@ -73,40 +73,37 @@ class NearbyPlacesAdapter(
                 } else {
                     photoPlace.setImageDrawable(resources.getDrawable(R.drawable.restaurant))
                 }
-                //set the rating star
-                val ratingBarFloat = (restaurant.rating!! * ((3.0f / 5.0f)))//convert rating to 3.0
-                val ratingBarFloatRound = Math.round(ratingBarFloat * 10.0f) / 10.0f//round rating to 1 decimal
-                if (ratingBarFloatRound != 0.0f) {//if rating not null = set the rating on rating bar (minimum rating google is 1 of 5, if rating =0.0 = not rating)
-                    ratingBarRv.rating = ratingBarFloatRound
+                //set rating bar
+                if (restaurant.rating != 0.0) {//if rating not null = set the rating on rating bar (minimum rating google is 1 of 5, if rating =0.0 = not rating)
+                    ratingBarRv.rating = converterHelper.getRatingBarFloatRound(restaurant.rating!!)
                 } else {
                     ratingBarRv.visibility = View.GONE//if rating null = gone the rating bar
                 }
 
-
                 //set open now of place
-                if (restaurant.openNow == true) {
-                    tvOpenHours.text = context.getString(R.string.open)
-                } else if (restaurant.openNow == false) {
-                    tvOpenHours.text = context.getString(R.string.closed)
+                if (restaurant.openNow != null) {
+                    tvOpenHours.text = converterHelper.getStringOpening(
+                        restaurant.openNow,
+                        context.getString(R.string.open),
+                        context.getString(R.string.closed)
+                    )
                 }
-                else{
-                    tvOpenHours.text=""
-                }
-                //set the numbers of workmates
+
+                //set the number of workmates joined this restaurant
                 val listUserChoiceThisRestaurant = ArrayList<User>()
-                userHelper.getUserByPlaceId(restaurant.id!!)
+                userHelper.getUserByPlaceId(restaurant.id!!)//call the user list who choice this restaurant
                     .addOnSuccessListener { documents ->
 
                         for (document in documents) {
                             val user = document.toObject(User::class.java)
                             listUserChoiceThisRestaurant.add(user)
                         }
-                        if (listUserChoiceThisRestaurant.size != 0) {
-                            tvNumbers.text="(${listUserChoiceThisRestaurant.size})"
-                            imageWorkmate.visibility=View.VISIBLE
-                        } else {
-                            tvNumbers.text=""
-                            imageWorkmate.visibility=View.GONE
+                        if (listUserChoiceThisRestaurant.size != 0) {//if the list isn't null display the info
+                            tvNumbers.text = "(${listUserChoiceThisRestaurant.size})"
+                            imageWorkmate.visibility = View.VISIBLE
+                        } else {// if the list is null gone the info
+                            tvNumbers.text = ""
+                            imageWorkmate.visibility = View.GONE
 
                         }
 
@@ -122,9 +119,6 @@ class NearbyPlacesAdapter(
                 itemView.setOnClickListener {
                     //set the click listener
                     listener(restaurant)
-
-
-
                 }
             }
     }

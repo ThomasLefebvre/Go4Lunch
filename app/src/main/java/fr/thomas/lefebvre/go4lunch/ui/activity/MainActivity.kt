@@ -39,7 +39,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import fr.thomas.lefebvre.go4lunch.R
 import fr.thomas.lefebvre.go4lunch.model.RestaurantFormatted
 import fr.thomas.lefebvre.go4lunch.model.database.User
-import fr.thomas.lefebvre.go4lunch.ui.service.UserHelper
+import fr.thomas.lefebvre.go4lunch.service.UserHelper
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Initialize Places.
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, getString(R.string.api_maps_key), Locale.US);
+            Places.initialize(applicationContext, getString(R.string.api_maps_key), Locale.US)
         }
 
         navView.setNavigationItemSelectedListener(this)
@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navUserName.text = user?.displayName
         navUserMail.text = user?.email
         if (user?.photoUrl != null) {
-            Picasso.get().load(user?.photoUrl).into(navUserPic)
+            Picasso.get().load(user.photoUrl).into(navUserPic)
         }
 
 
@@ -339,8 +339,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     startDetailsActivityChoiceRestaurant(place.id)
                 }
                 AutocompleteActivity.RESULT_ERROR -> {//if error in request
-                    val status = Autocomplete.getStatusFromIntent(data!!);
-                    Log.i("DEBUG_AUTOCOMPLETE", status.statusMessage!!);
+                    val status = Autocomplete.getStatusFromIntent(data!!)
+                    Log.i("DEBUG_AUTOCOMPLETE", status.statusMessage!!)
                 }
                 RESULT_CANCELED -> {
                     // The user canceled the operation.
@@ -368,7 +368,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun alertDialogForCloseApp() {
         AlertDialog.Builder(this)
             .setMessage(R.string.pop_pup_message_leave)
-            .setPositiveButton(R.string.pop_pup_yes) { dialogInterface, i ->
+            .setPositiveButton(R.string.pop_pup_yes) { _, _ ->
                 super.onBackPressed()
             }
             .setNegativeButton(R.string.pop_pup_no, null)

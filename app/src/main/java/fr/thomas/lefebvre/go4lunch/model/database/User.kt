@@ -1,9 +1,5 @@
 package fr.thomas.lefebvre.go4lunch.model.database
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-
-
 data class User(
     val uid:String="",
     val name:String="",
@@ -12,7 +8,8 @@ data class User(
     var restaurantName: String? ="",
     var restaurantAdress:String?="",
     var restaurantUid:String?="",
-    var notificationIsActived: Boolean =true
+    var notificationIsActived: Boolean =true,
+    var listRestaurantLiked:ArrayList<String> = arrayListOf()
 
 )
 

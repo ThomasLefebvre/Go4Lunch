@@ -18,10 +18,7 @@
             android:usesCleartextTraffic="true"
             tools:ignore="GoogleAppIndexingWarning"
             tools:targetApi="m">
-        <activity android:name=".ui.activity.SplashScreen"
-                  android:theme="@style/AppThemeWelcome">
-        </activity>
-        <activity
+         <activity
                 android:name=".ui.activity.WebViewActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>

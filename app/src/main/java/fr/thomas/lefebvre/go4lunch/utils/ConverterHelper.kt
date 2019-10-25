@@ -1,13 +1,10 @@
 package fr.thomas.lefebvre.go4lunch.utils
 
-import java.util.*
+
+class ConverterHelper() {
 
 
-class ConverterHelper ()
-{
-
-
-    fun computeDistance(deviceLat: Double,  deviceLng: Double,restaurantLat: Double, restaurantLng: Double): String {
+    fun computeDistance(deviceLat: Double, deviceLng: Double, restaurantLat: Double, restaurantLng: Double): String {
 
         val R = 6371 // Radius of earth
         val latDistance = Math.toRadians(restaurantLat - deviceLat)
@@ -25,11 +22,24 @@ class ConverterHelper ()
         return Math.round(Math.sqrt(distance)).toString() + "m"
     }
 
-    fun getDayOfWeek():Int{
-        val calendar=Calendar.getInstance()
-        return calendar.get(Calendar.DAY_OF_WEEK)-2
+    fun getDayOfWeek(dayInt: Int): Int {
+        if (dayInt == 1) {
+            return 6
+        } else return (dayInt - 2)
     }
 
+    fun getStringOpening(oppening: Boolean, openString: String, closedString: String): String {
+        when (oppening) {
+            true -> return openString
+            false -> return closedString
+            else -> return ""
+        }
+    }
+
+    fun getRatingBarFloatRound(rating: Double): Float {
+        val ratingBarFloat = (rating * ((3.0f / 5.0f)))//convert rating to 3.0
+        return Math.round(ratingBarFloat * 10.0f) / 10.0f//round rating to 1 decimal
+    }
 
 
 }
