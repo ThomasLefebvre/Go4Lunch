@@ -1,6 +1,6 @@
-# Go4Lunch
+# Go4Lunch<img src="./readme/ic_launcher_Go4Lunch-web.png" width="40%" height="40%">
 
-Une application Android qui permet de trouver un restaurant à proximité, pour manger avec vos collègues.
+An Android application that allows you to find a restaurant nearby, to eat with your colleagues.
 
 This allows:
 - Display the 20 closest restaurants, as a list or on a map
