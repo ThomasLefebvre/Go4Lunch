@@ -32,7 +32,7 @@ This allows:
 
 ### Menu Drawer
 
-<img src="./readme/menuDrawer" width="50%" height="50%">
+<img src="./readme/menuDrawer.jpg" width="50%" height="50%">
 
 
 
