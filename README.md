@@ -1,4 +1,4 @@
-# Go4Lunch<img src="./readme/ic_launcher_Go4Lunch-web.png" width="40%" height="40%">
+# Go4Lunch<img src="./readme/ic_launcher_Go4Lunch-web.png" width="10%" height="10%">
 
 An Android application that allows you to find a restaurant nearby, to eat with your colleagues.
 
